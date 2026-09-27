@@ -8,8 +8,9 @@ export const CONFIG = {
     AI_ENDPOINT: '/api/ai',
     CHAT_MEMORY: 5, // messages kept; on the 5th the AI also returns a running summary
 
-    // Excel sync (docs/SETUP.md). Everything works locally while this is false.
-    SYNC_ENABLED: false,
+    // Excel sync (docs/SETUP.md). 'auto' = on as soon as the Vercel Blob store is connected;
+    // everything keeps working locally until then. Use false to force it off.
+    SYNC_ENABLED: 'auto',
     SYNC_ENDPOINT: '/api/sheet',
     SYNC_DEBOUNCE_MS: 4000,
 

@@ -18,6 +18,12 @@ for (const file of ['.env', '.env.local']) {
     }
 }
 
+// Without a Vercel Blob token, keep the Excel data file on disk so you can open it in Excel.
+if (!process.env.BLOB_READ_WRITE_TOKEN && !process.env.EXCEL_LOCAL_PATH) {
+    process.env.EXCEL_LOCAL_PATH = path.join(ROOT, '.data', 'agrosphere-ai-data.xlsx');
+    process.env.SYNC_SECRET ||= 'local-dev-secret';
+}
+
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.json': 'application/json', '.ico': 'image/x-icon' };
 
 async function runApi(name, req, res) {
@@ -59,4 +65,7 @@ http.createServer(async (req, res) => {
     if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) return send(res, 404, '404 - page not found');
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     fs.createReadStream(file).pipe(res);
-}).listen(PORT, () => console.log(`Agrosphere AI running at http://localhost:${PORT}`));
+}).listen(PORT, () => {
+    console.log(`Agrosphere AI running at http://localhost:${PORT}`);
+    console.log(process.env.EXCEL_LOCAL_PATH ? `Excel data file: ${process.env.EXCEL_LOCAL_PATH}` : 'Excel data file: Vercel Blob (agrosphere-ai-data.xlsx)');
+});

@@ -5,10 +5,11 @@
 ```bash
 cd ai-web
 cp .env.example .env.local     # fill in values later; the app works without them
-node dev-server.mjs            # http://localhost:3000  (redirects to /home)
+npm install
+npm start                      # http://localhost:3000  (redirects to /home)
 ```
 
-`dev-server.mjs` has no dependencies. It serves clean URLs (`/home`, `/login`, `/dashboard`...) and runs the `/api` functions with your `.env.local`.
+`npm start` runs `dev-server.mjs`. It serves clean URLs (`/home`, `/login`, `/dashboard`...) and runs the `/api` functions with your `.env.local`.
 Opening the `.html` files directly (`file://`) will not work - modules and clean URLs need a server.
 
 **Deploy:** push the folder to GitHub → import it on vercel.com (Framework preset: *Other*, no build command). `vercel.json` turns on `cleanUrls` (no `.html` in any URL) and redirects `/` → `/home`.
@@ -32,80 +33,62 @@ Passwords are stored as salted SHA-256 hashes, never as plain text.
 
 ---
 
-## 3. Excel spreadsheet (one file, one table, every row tied to a user)
+## 3. Excel spreadsheet (one file, every row tied to a user)
 
-The app stays **local-first**. It always reads from and writes to `localStorage` instantly. Changed rows are pushed to Excel in the background, 4 seconds after the last change and whenever the tab is hidden.
-When a user logs in on another device, `/api/sheet` returns all rows for that `userId`. They are merged into that device's `localStorage`, and the app carries on as normal.
-Excel is slow (each Graph call takes 0.5-2 s), which is why the UI never waits for it.
+### Where the file lives
 
-### 3.1 Create the workbook
-
-1. In OneDrive (or SharePoint), create **`agrosphere-ai-data.xlsx`**.
-2. Rename the first sheet to **`Entries`**.
-3. Type these headers in **A1:G1** exactly:
-
-   | A | B | C | D | E | F | G |
-   |---|---|---|---|---|---|---|
-   | id | userId | entryType | data | createdAt | updatedAt | deleted |
-
-4. Select **A1:G2** → *Insert → Table* → tick *My table has headers*.
-5. Open *Table Design* and set **Table Name** to `Entries`. The table must start at **A1**.
-6. Select column D and set *Format → Text* (it holds JSON).
-
-Example row the app writes:
+There is **one** Excel file, `agrosphere-ai-data.xlsx`, with **one** sheet, `Entries`:
 
 | id | userId | entryType | data | createdAt | updatedAt | deleted |
 |---|---|---|---|---|---|---|
-| cro_m1x...| usr_m1a... | crop | `{"name":"Maize","variety":"Oba Super 2","health":"good",...}` | 2026-09-27T10:00:00Z | 2026-09-27T10:05:00Z | FALSE |
+| cro_m1x... | usr_m1a... | crop | `{"name":"Maize","health":"good",...}` | 2026-09-27T10:00:00Z | 2026-09-27T10:05:00Z | FALSE |
 
-Deletes are soft (`deleted = TRUE`), so row positions never shift. Filter by `userId` in Excel to see one farmer's data.
+- **Live site:** the file is stored in **Vercel Blob** as a *private* file. It is not in GitHub, and nobody can open it by URL.
+- **Local development** (`node dev-server.mjs` without a Blob token): the same code writes a real file to **`.data/agrosphere-ai-data.xlsx`** on your computer. You can open it in Excel. `.data` is git-ignored.
 
-### 3.2 Register an app with Microsoft (free)
+GitHub only holds the **code**. The data never goes into the repository.
 
-1. Go to **entra.microsoft.com → App registrations → New registration**.
-2. Name it `Agrosphere Sync`. Pick the supported account type:
-   - **Personal Microsoft account (outlook.com / hotmail):** "Personal Microsoft accounts only".
-   - **Work/school Microsoft 365:** "Accounts in this organizational directory only".
-3. Copy the **Application (client) ID** → `MS_CLIENT_ID`.
+### How updates reach the file
 
-**Personal OneDrive:**
+1. The app saves every change in the browser (`localStorage`) straight away, and the page never waits for Excel.
+2. About 4 seconds after the last change, or when the tab is hidden, `js/sync.js` sends the changed rows to **`/api/sheet`**.
+3. `/api/sheet` downloads `agrosphere-ai-data.xlsx` from Blob, updates the matching rows by `id` (the newest `updatedAt` wins) or adds new ones, and uploads the file again.
+   - Each upload is *conditional*: if another save happened in between, it re-reads the file and retries, so no update is lost.
+4. **Logging in on another device:** `/api/sheet` checks the password against the `user` row and sends back every row with that `userId`. The rows are merged into that device's `localStorage`.
+5. **Staying in sync:** an open dashboard pulls new rows when it loads and whenever you come back to the tab.
 
-4. Go to *Authentication → Allow public client flows → Yes*, then Save.
-5. Run: `MS_CLIENT_ID=<id> node scripts/get-ms-refresh-token.mjs`
-6. Sign in with the code it prints.
-7. Copy the printed `MS_REFRESH_TOKEN` and your workbook URL.
-8. Set `MS_TENANT_ID=consumers` and leave `MS_CLIENT_SECRET` empty.
-9. If sync later fails with `invalid_grant` (roughly every 90 days), run the script again.
+Deletes are soft (`deleted = TRUE`). The demo account is never synced; it stays on each device.
 
-**Work/school Microsoft 365:**
+### Setup (about 3 minutes)
 
-4. Go to *API permissions → Add → Microsoft Graph → Application permissions → `Files.ReadWrite.All`*, then *Grant admin consent*.
-5. Go to *Certificates & secrets → New client secret* → `MS_CLIENT_SECRET`.
-6. Set `MS_TENANT_ID` to your *Directory (tenant) ID*, and leave `MS_REFRESH_TOKEN` empty.
-7. Set the workbook URL to `https://graph.microsoft.com/v1.0/users/<your-email>/drive/root:/agrosphere-ai-data.xlsx:/workbook`.
+1. **Vercel → your project → Storage → Create Database → Blob.**
+   - Name it `agrosphere-data` and choose **Private** access if asked.
+   - Connect it to the project for all environments. Vercel adds `BLOB_READ_WRITE_TOKEN` for you.
+2. **Project → Settings → Environment Variables**, add:
+   ```
+   SYNC_SECRET=<long random string>      # e.g. run: openssl rand -hex 32
+   SHEET_ADMIN_KEY=<a password you choose>
+   ```
+3. Redeploy. That's it: `CONFIG.SYNC_ENABLED` is `'auto'`, so the app turns sync on as soon as `/api/sheet?status` reports the store is connected. You don't need a code change.
+   - The file is created on the first sign-up.
+   - Accounts created before sync was on are added the next time they log in.
 
-### 3.3 Environment variables (Vercel → Project → Settings → Environment Variables)
+### Opening the file in Excel
 
-```
-SYNC_SECRET=<any long random string>          # e.g. openssl rand -hex 32
-MS_TENANT_ID=consumers
-MS_CLIENT_ID=...
-MS_CLIENT_SECRET=                              # work/school only
-MS_REFRESH_TOKEN=...                           # personal only
-EXCEL_WORKBOOK_URL=https://graph.microsoft.com/v1.0/me/drive/items/<ITEM-ID>/workbook
-EXCEL_TABLE=Entries
-EXCEL_SHEET=Entries
-```
+- **Download link:** `https://<your-site>/api/sheet?download&key=<SHEET_ADMIN_KEY>` downloads the current `agrosphere-ai-data.xlsx`.
+- Or: **Vercel → Storage → your Blob store → Browser → agrosphere-ai-data.xlsx → Download.**
+- Use *Data → Filter* on `userId` or `entryType` to see one farmer's data.
 
-### 3.4 Switch it on
+Treat downloaded copies as **read-only snapshots**. The app owns the live file, and the next sync overwrites it, so edits made in Excel and re-uploaded would be lost. The file contains password hashes, so keep downloads private.
 
-In `js/config.js` set `SYNC_ENABLED: true` and redeploy. From then on:
+### Local testing against the real Blob store
 
-- **Sign up** checks Excel for duplicate emails and writes the `user` row.
-- **Log in** checks the password against the Excel `user` row and pulls all of that user's rows.
-- **Every change** is queued, then pushed in the background. The newest `updatedAt` wins.
+Run `vercel env pull .env.local` (or copy `BLOB_READ_WRITE_TOKEN` and `SYNC_SECRET` into `.env.local`), then `node dev-server.mjs`. It prints which file it is using.
 
-Limits to know: one Excel cell holds at most 32,767 characters (diagnosis photo thumbnails are therefore kept on the device and not synced). Excel is fine for testing and a few thousand rows; after that, move the same rows to a database.
+### Limits
+
+- One Excel cell holds at most 32,767 characters. That's why diagnosis photo thumbnails stay on the device.
+- Every save re-writes the whole file. That's fine for testing and a few thousand rows; after that, move the same rows into a database (the row format doesn't need to change).
 
 ---
 
@@ -163,7 +146,8 @@ components/
   dashboard/sections/overview|records|crops|livestock|finance|settings.js
   dashboard/record-modal.js  fields.js  item-forms.js  inventory-page.js  diagnosis-popup.js
 js/  config  store  auth  sync  ai  weather  export  insights  i18n  theme  catalog  records  ui  demo
-api/ai.js  api/sheet.js                 <- Vercel serverless functions
+api/ai.js  api/sheet.js                 <- Vercel serverless functions (sheet.js = Excel file in Vercel Blob)
+dev-server.mjs                           <- local server; writes .data/agrosphere-ai-data.xlsx
 assets/css/  site.css + dashboard.css (your original styles) + *-extra.css additions
 .original/                               <- untouched copies of the original two files
 ```

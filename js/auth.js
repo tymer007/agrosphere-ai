@@ -49,8 +49,9 @@ export async function signup({ fullName, email, username, password }) {
     const userId = uid('usr');
     const data = { fullName: fullName.trim(), email, username, salt, passwordHash, plan: 'free', onboarded: false, onboardingStep: 'profile' };
 
+    // With Excel sync on, the sheet is checked for duplicates across all devices first.
     let token = null;
-    if (CONFIG.SYNC_ENABLED) {
+    if (await sync.enabled()) {
         const res = await sync.register({ id: userId, data });
         token = res.token;
     }
@@ -59,19 +60,18 @@ export async function signup({ fullName, email, username, password }) {
     return currentUser();
 }
 
-export async function login(identifier, password) {
+export async function login(identifier, password, { localOnly = false } = {}) {
     let row = findUserRow(identifier);
+    let token = null;
 
-    // Signing in on a new device: pull this user's rows from the Excel sheet into local storage.
-    if (CONFIG.SYNC_ENABLED) {
+    // With Excel sync on: check the sheet and pull this user's rows into local storage
+    // (this is how an account appears on a new device).
+    if (!localOnly && (await sync.enabled())) {
         try {
             const res = await sync.login(identifier, password);
             db.mergeRemote(res.entries);
+            token = res.token;
             row = findUserRow(identifier);
-            if (row) {
-                startSession(row.id, res.token);
-                return currentUser();
-            }
         } catch (err) {
             if (!row) throw err;
         }
@@ -80,7 +80,8 @@ export async function login(identifier, password) {
     if (!row) throw new Error('No account found with that email or username.');
     const hash = await hashPassword(password, row.data.salt);
     if (hash !== row.data.passwordHash) throw new Error('Incorrect password.');
-    startSession(row.id);
+    startSession(row.id, token);
+    if (!token && !localOnly) sync.ensureToken().then(() => sync.flush()); // local account not in the sheet yet
     return currentUser();
 }
 
@@ -138,5 +139,5 @@ export async function loginDemo() {
         }, { id: userId, userId });
         seedDemo(userId);
     }
-    return login(DEMO.email, DEMO.password);
+    return login(DEMO.email, DEMO.password, { localOnly: true }); // demo data stays on this device
 }

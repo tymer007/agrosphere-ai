@@ -29,7 +29,6 @@ class AgroDashboard extends HTMLElement {
         applyTheme();
         this.user = requireAuth({ onboarded: true });
         if (!this.user) return;
-        sync.pull();
 
         this.innerHTML = `
         <agro-loader></agro-loader>
@@ -100,6 +99,12 @@ class AgroDashboard extends HTMLElement {
         applyI18n(this);
         this.show(this.initialSection());
         this.updateBadge();
+        // Pull newer rows from the Excel sheet (other devices) and re-render if anything changed.
+        const pull = () => sync.pull().then((changed) => changed && this.show(this.current, true));
+        pull();
+        // Coming back to the tab picks up changes made on other devices.
+        this.onVisible = () => document.visibilityState === 'visible' && pull();
+        document.addEventListener('visibilitychange', this.onVisible);
 
         this.offChange = onChange(() => this.updateBadge());
         this.onLang = () => { applyI18n(this); this.show(this.current, true); };
@@ -110,6 +115,7 @@ class AgroDashboard extends HTMLElement {
     disconnectedCallback() {
         this.offChange?.();
         window.removeEventListener('agro:lang', this.onLang);
+        document.removeEventListener('visibilitychange', this.onVisible);
     }
 
     initialSection() {

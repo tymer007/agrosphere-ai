@@ -5,9 +5,13 @@
   "type": "module",
   "description": "Agrosphere AI - intelligent farming assistant",
   "scripts": {
-    "dev": "node dev-server.mjs",
-    "vercel": "vercel dev",
-    "static": "npx serve -l 3000 ."
+    "start": "node dev-server.mjs"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  }
 }

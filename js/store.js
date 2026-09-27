@@ -172,13 +172,17 @@ export const db = {
     mergeRemote(remoteRows) {
         const all = rows();
         const byId = new Map(all.map((r) => [r.id, r]));
+        let changed = 0;
         remoteRows.forEach((remote) => {
             const local = byId.get(remote.id);
-            if (!local) all.push(remote);
-            else if (new Date(remote.updatedAt) > new Date(local.updatedAt)) Object.assign(local, remote);
+            if (!local) { all.push(remote); changed++; }
+            else if (new Date(remote.updatedAt) > new Date(local.updatedAt)) { Object.assign(local, remote); changed++; }
         });
+        if (!changed) return 0;
         persist();
+        if (remoteRows.some((r) => ANALYSED_TYPES.has(r.entryType))) bumpVersion(remoteRows[0].userId);
         emit(null);
+        return changed;
     },
 
     takeQueue() {
