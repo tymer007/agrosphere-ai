@@ -4,13 +4,17 @@
 
 const GATEWAY_URL = 'https://ai-gateway.vercel.sh/v1/chat/completions';
 
+// All three are available on AI Gateway's free tier (newer models need paid credits - docs/SETUP.md).
 const MODELS = {
     chat: process.env.AI_MODEL_CHAT || 'google/gemini-2.5-flash-lite',
     diagnose: process.env.AI_MODEL_VISION || 'google/gemini-2.5-flash-lite',
-    analysis: process.env.AI_MODEL_ANALYSIS || 'google/gemini-3-flash'
+    analysis: process.env.AI_MODEL_ANALYSIS || 'openai/gpt-5-mini'
 };
 
-const MAX_TOKENS = { chat: 700, diagnose: 1200, analysis: 2000 };
+// Thinking models count their reasoning toward max_tokens, so leave generous room.
+const MAX_TOKENS = { chat: 1500, diagnose: 3000, analysis: 8000 };
+// Low reasoning effort keeps the analysis fast and cheap; the answer is still well-reasoned.
+const REASONING = { analysis: { effort: 'low', exclude: true } };
 
 // Best-effort per-IP throttle (resets when the function instance is recycled).
 // The real daily limits are enforced per user + device in the app (js/ai.js).
@@ -56,7 +60,7 @@ const SCHEMAS = {
                     items: {
                         type: 'object',
                         properties: {
-                            title: { type: 'string' },
+                            title: { type: 'string', description: 'Short action title (max 8 words). Do not include the priority.' },
                             detail: { type: 'string', description: 'What to do and why, 1-2 sentences.' },
                             priority: { type: 'string', enum: ['high', 'medium', 'low'] },
                             category: { type: 'string', enum: ['crops', 'livestock', 'weather', 'records', 'general'] }
@@ -186,6 +190,7 @@ export default async function handler(req, res) {
                 model: MODELS[task],
                 messages,
                 max_tokens: MAX_TOKENS[task],
+                ...(REASONING[task] ? { reasoning: REASONING[task] } : {}),
                 temperature: task === 'chat' ? 0.6 : 0.3,
                 stream: false,
                 response_format: { type: 'json_schema', json_schema: SCHEMAS[task] }
@@ -194,14 +199,20 @@ export default async function handler(req, res) {
         const json = await upstream.json().catch(() => ({}));
         if (!upstream.ok) {
             console.error('[ai] gateway error', upstream.status, json?.error);
+            const detail = String(json?.error?.message || '');
             const msg = upstream.status === 401 ? 'AI key is invalid - check AI_GATEWAY_API_KEY.'
+                : /free tier/i.test(detail) ? `The model ${MODELS[task]} needs paid AI Gateway credits. Choose a free-tier model (see docs/SETUP.md).`
                 : upstream.status === 402 || upstream.status === 403 ? 'AI credits are exhausted or not enabled for this key.'
                 : upstream.status === 429 ? 'The AI service is busy. Try again in a minute.'
                 : 'The AI service had a problem. Please try again.';
             return res.status(502).json({ error: msg });
         }
-        const content = json.choices?.[0]?.message?.content || '';
-        const data = parseJSON(content);
+        const choice = json.choices?.[0];
+        if (choice?.finish_reason === 'length') {
+            console.error('[ai] answer cut off at max_tokens', task, json.usage);
+            return res.status(502).json({ error: 'The AI answer was too long and got cut off. Please try again.' });
+        }
+        const data = parseJSON(choice?.message?.content || '');
         if (task === 'diagnose' && data.isPlant === false) {
             return res.status(422).json({ error: "That photo doesn't look like a plant. Please upload a clear photo of the affected leaves, stem or fruit." });
         }

@@ -5,7 +5,16 @@ import { toast, esc } from '../../js/ui.js';
 import { t } from '../../js/i18n.js';
 import { itemSelect, kindFields, bindFormUI, saveRecord } from './fields.js';
 
-const PICKABLE = ['crop_review', 'livestock_review', 'fertilizer', 'treatment', 'harvest', 'observation'];
+// Record options per page: Crop Health and Livestock only offer their own kinds.
+const SCOPES = {
+    all: ['crop_review', 'livestock_review', 'fertilizer', 'treatment', 'harvest', 'observation'],
+    crop: ['crop_review', 'fertilizer', 'treatment', 'harvest', 'observation'],
+    livestock: ['livestock_review', 'treatment', 'harvest', 'observation']
+};
+const SCOPED_TEXT = {
+    crop: { treatment: ['Spray / treatment', 'Pesticide, fungicide or other treatment on a crop'], harvest: ['Harvest', 'Record a crop harvest'], observation: ['Crop observation', 'Any other note about a crop'] },
+    livestock: { treatment: ['Treatment / vaccination', 'Medicine, deworming or vaccination given'], harvest: ['Production / sales', 'Eggs, milk, animals sold...'], observation: ['Livestock observation', 'Any other note about your animals'] }
+};
 const DESCRIPTIONS = {
     crop_review: 'Weekly health, growth stage, issues and fertilizer for one crop',
     livestock_review: 'Weekly head count, health, feed and production for one group',
@@ -33,8 +42,11 @@ function close() {
     overlay?.classList.remove('active');
 }
 
-export function openRecordModal({ kind = null, itemId = null, recordId = null, prefill = {}, onSaved } = {}) {
+let scope = 'all';
+
+export function openRecordModal({ kind = null, itemId = null, recordId = null, prefill = {}, onSaved, scope: pageScope = 'all' } = {}) {
     ensure();
+    scope = SCOPES[pageScope] ? pageScope : 'all';
     const existing = recordId ? db.get(recordId) : null;
     if (existing) {
         kind = existing.kind;
@@ -46,16 +58,19 @@ export function openRecordModal({ kind = null, itemId = null, recordId = null, p
 }
 
 function showPicker(onSaved) {
-    overlay.querySelector('.modal-title').textContent = t('new_record');
+    overlay.querySelector('.modal-title').textContent = scope === 'crop' ? 'New crop record' : scope === 'livestock' ? 'New livestock record' : t('new_record');
     overlay.querySelector('.modal-body').innerHTML = `
         <p class="modal-lead">What would you like to record?</p>
         <div class="kind-grid">
-            ${PICKABLE.map((k) => `
+            ${SCOPES[scope].map((k) => {
+                const [label, desc] = SCOPED_TEXT[scope]?.[k] || [RECORD_KINDS[k].label, DESCRIPTIONS[k]];
+                return `
             <button type="button" class="kind-card" data-kind="${k}">
                 <span class="kind-icon badge-${RECORD_KINDS[k].badge}"><i class="fas ${RECORD_KINDS[k].icon}"></i></span>
-                <strong>${esc(RECORD_KINDS[k].label)}</strong>
-                <small>${esc(DESCRIPTIONS[k])}</small>
-            </button>`).join('')}
+                <strong>${esc(label)}</strong>
+                <small>${esc(desc)}</small>
+            </button>`;
+            }).join('')}
         </div>`;
     overlay.querySelector('.modal-footer').innerHTML = `<button class="btn btn-glass" data-close>${t('cancel')}</button>`;
     overlay.querySelector('[data-close]').addEventListener('click', close);
@@ -65,8 +80,9 @@ function showPicker(onSaved) {
 function showForm(kind, itemId, values, onSaved, fromPicker = false) {
     const meta = RECORD_KINDS[kind];
     const editing = !!values?.id;
-    overlay.querySelector('.modal-title').innerHTML = `<i class="fas ${meta.icon}" style="color:var(--primary)"></i> ${editing ? 'Edit' : ''} ${esc(meta.label)}`;
-    overlay.querySelector('.modal-body').innerHTML = `<form class="record-form" novalidate>${itemSelect(kind, itemId || '')}${kindFields(kind, values)}</form>`;
+    const label = SCOPED_TEXT[scope]?.[kind]?.[0] || meta.label;
+    overlay.querySelector('.modal-title').innerHTML = `<i class="fas ${meta.icon}" style="color:var(--primary)"></i> ${editing ? 'Edit' : ''} ${esc(label)}`;
+    overlay.querySelector('.modal-body').innerHTML = `<form class="record-form" novalidate>${itemSelect(kind, itemId || '', scope)}${kindFields(kind, values)}</form>`;
     overlay.querySelector('.modal-footer').innerHTML = `
         ${fromPicker ? `<button class="btn btn-glass" data-back style="margin-right:auto"><i class="fas fa-arrow-left"></i> Back</button>` : ''}
         <button class="btn btn-glass" data-close>${t('cancel')}</button>

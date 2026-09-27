@@ -321,3 +321,48 @@
 @media (min-width: 1680px) { .report-body { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
 
 .glass-card > p.muted + .settings-actions { margin-top: 16px; }
+
+/* ---------- Page action bar (Crop Health / Livestock) ---------- */
+.page-actions { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px; }
+@media (min-width: 768px) { .page-actions { grid-template-columns: 1fr 1fr; } }
+.action-tile {
+    display: flex; align-items: center; gap: 14px; text-align: left; padding: 18px 20px; border-radius: var(--radius);
+    background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow); cursor: pointer;
+    font-family: inherit; color: var(--text-primary); transition: var(--transition);
+}
+.action-tile:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3), var(--shadow-glow); }
+.action-tile > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.action-tile strong { font-size: 1rem; }
+.action-tile small { color: var(--text-secondary); font-size: 0.82rem; }
+.action-tile.disabled { opacity: 0.6; cursor: not-allowed; }
+.action-tile.disabled:hover { transform: none; }
+.action-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.action-icon.badge-danger { background: #fee2e2; color: #ef4444; }
+.action-icon.badge-success { background: #d1fae5; color: #059669; }
+.action-icon.badge-warning { background: #ffedd5; color: #f97316; }
+.action-tile .quota-pill, .action-tile .soon-tag { flex-shrink: 0; }
+.dropzone .dz-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.dropzone .dz-empty > i { font-size: 2rem; color: var(--primary); }
+
+/* ---------- Per-item log on inventory cards ---------- */
+.inv-log { list-style: none; margin-top: 12px; border-top: 1px dashed #e5e7eb; padding-top: 8px; }
+.inv-log li { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; color: var(--text-primary); }
+.inv-log li:hover { background: rgba(52, 211, 153, 0.1); }
+.inv-log li span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inv-log small { color: var(--text-secondary); white-space: nowrap; }
+.inv-log .fa-chevron-right { font-size: 0.65rem; color: var(--text-secondary); }
+.inv-log .kind-diagnosis { color: #ef4444; }
+.inv-log .kind-fertilizer { color: #059669; }
+.inv-log .kind-treatment { color: #f97316; }
+.inv-log .kind-harvest { color: #3b82f6; }
+
+/* ---------- Record detail popup ---------- */
+.rd-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; color: var(--text-primary); }
+.rd-head strong { font-size: 1.1rem; }
+.rd-head span:not(.badge) { color: var(--text-secondary); font-size: 0.85rem; }
+.rd-row { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; color: var(--text-primary); }
+.rd-row span { color: var(--text-secondary); }
+.rd-row strong { text-align: right; }
+
+/* Secondary buttons inside popups stay readable in both themes */
+.modal .btn-glass, .modal-overlay .btn-glass { background: rgba(5, 150, 105, 0.08); color: var(--primary); border: 1px solid rgba(5, 150, 105, 0.25); }

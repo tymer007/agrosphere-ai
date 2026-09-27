@@ -37,8 +37,10 @@ export function textarea(field, label, value = '', placeholder = '') {
 }
 
 // Item picker for a record kind.
-export function itemSelect(kind, itemId = '') {
-    const type = RECORD_KINDS[kind]?.itemType;
+export function itemSelect(kind, itemId = '', scope = 'all') {
+    // On the Crop Health / Livestock pages, "any item" kinds only list that page's items.
+    const kindType = RECORD_KINDS[kind]?.itemType;
+    const type = kindType === 'any' && (scope === 'crop' || scope === 'livestock') ? scope : kindType;
     const crops = db.list('crop');
     const animals = db.list('livestock');
     const opt = (id, label) => `<option value="${id}" ${id === itemId ? 'selected' : ''}>${esc(label)}</option>`;

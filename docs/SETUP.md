@@ -120,16 +120,23 @@ The browser never sees the key. The frontend calls **`/api/ai`**, a serverless f
 - There is a best-effort per-IP hourly cap (`AI_HOURLY_LIMIT_PER_IP`, default 40).
 - Inputs are validated and size-limited, including image type and size.
 
-### 4.3 Models (live AI Gateway prices, per 1M tokens, checked 27 Sep 2026)
+### 4.3 Models (tested with a free-tier key, 27 Sep 2026)
 
-| Use | Model | Input | Output | Why |
-|---|---|---|---|---|
-| Chatbot (5/day) | `google/gemini-2.5-flash-lite` | $0.10 | $0.40 | Cheapest proven model with good multilingual chat |
-| Plant diagnosis (1/day) | `google/gemini-2.5-flash-lite` | $0.10 | $0.40 | Same cheap model; reads images; JSON output |
-| Overview analysis (3/day) | `google/gemini-3-flash` | $0.50 | $3.00 | Noticeably stronger reasoning over the full farm bundle, still cheap |
+AI Gateway's **free credit only covers some models**. Newer ones (`gemini-3-flash`, `gemini-3.x-flash-lite`, `gpt-6-luna`, Claude, DeepSeek...) return **403 "Free tier users do not have access to this model"** until you buy paid credits. The defaults below all work on the free tier:
 
-Rough cost per active user per day at the limits: well under **$0.01**.
-To try other models, change `AI_MODEL_CHAT`, `AI_MODEL_VISION` or `AI_MODEL_ANALYSIS`; no code change is needed. `google/gemini-3.1-flash-lite` ($0.25/$1.50) is a good step up for diagnosis if the cheap model's accuracy isn't enough.
+| Use | Model | Input / Output per 1M tokens | Why |
+|---|---|---|---|
+| Chatbot (5/day) | `google/gemini-2.5-flash-lite` | $0.10 / $0.40 | Cheapest; fast, good multilingual chat |
+| Plant diagnosis (1/day) | `google/gemini-2.5-flash-lite` | $0.10 / $0.40 | Reads images; JSON output |
+| Overview analysis (3/day) | `openai/gpt-5-mini` | $0.25 / $2.00 | Strongest free-tier option in our test; gave the most specific advice, ~15 s |
+
+Other free-tier models that worked: `google/gemini-2.5-flash` (faster, ~10 s, slightly less detailed), `openai/gpt-5`, `openai/gpt-4.1`, `openai/gpt-4.1-mini`, `openai/gpt-5-nano`.
+
+To change a model, set `AI_MODEL_CHAT`, `AI_MODEL_VISION` or `AI_MODEL_ANALYSIS` (in `.env.local` locally, and in Vercel's environment variables). No code change is needed. **Remember the Vercel variables override the code defaults.** If you copied `.env.example` earlier with `gemini-3-flash`, update `AI_MODEL_ANALYSIS` in Vercel too.
+
+The analysis runs with low reasoning effort and a large token allowance. Reasoning models count their thinking toward the limit, and a small limit cut the JSON off. If a model needs paid credits, the Overview now says so instead of showing a vague error.
+
+**Where to put your key:** use `.env.local` (git-ignored), **never `.env.example`**, which is committed to GitHub.
 
 ### 4.4 Daily limits (`js/config.js` → `AI_LIMITS`)
 

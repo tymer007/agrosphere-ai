@@ -89,7 +89,12 @@ class AgroDashboard extends HTMLElement {
             user: () => currentUser(),
             navigate: (id) => (location.hash = id),
             refresh: () => this.show(this.current, true),
-            openRecord: (opts) => openRecordModal({ ...opts, onSaved: () => this.app.refresh() }),
+            // Crop Health / Livestock pages only offer their own record options; other pages show all.
+            openRecord: (opts) => openRecordModal({
+                scope: SECTIONS.find((s) => s.id === this.current)?.recordScope || 'all',
+                ...opts,
+                onSaved: () => this.app.refresh()
+            }),
             setSubtitle: (text) => (this.querySelector('#pageSubtitle').textContent = text)
         };
 

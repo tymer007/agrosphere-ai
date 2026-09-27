@@ -5,10 +5,15 @@ import { t } from '../../js/i18n.js';
 import { healthBadge, healthLabel } from '../../js/catalog.js';
 import { kindFields, bindFormUI, saveRecord } from './fields.js';
 import { cropFormHTML, livestockFormHTML, bindItemForm, readItemForm } from './item-forms.js';
+import { showRecordDetail } from './record-detail.js';
+import { RECORD_KINDS } from '../../js/catalog.js';
+import { describeRecord } from '../../js/records.js';
 
 const selected = { crop: null, livestock: null };
 
-export function renderInventoryPage(root, app, cfg, extraHTML = '') {
+// `top` = action bar HTML above the split layout. Each item card shows its recent log
+// (cfg.logKinds, e.g. diagnoses + fertilizer for crops); clicking an entry shows its details.
+export function renderInventoryPage(root, app, cfg, { top = '' } = {}) {
     const items = db.list(cfg.kind).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
     const records = db.list('record').sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || '').localeCompare(a.createdAt || ''));
     const reviewsFor = (id) => records.filter((r) => r.itemId === id && r.kind === cfg.reviewKind);
@@ -18,7 +23,10 @@ export function renderInventoryPage(root, app, cfg, extraHTML = '') {
     const current = items.find((i) => i.id === selected[cfg.kind]);
     const done = items.filter((i) => doneThisWeek(i.id)).length;
 
+    const logFor = (id) => records.filter((r) => r.itemId === id && (cfg.logKinds || []).includes(r.kind)).slice(0, 3);
+
     root.innerHTML = `
+    ${top}
     <div class="split-grid">
         <div class="glass-card inventory-panel">
             <div class="panel-head">
@@ -26,7 +34,7 @@ export function renderInventoryPage(root, app, cfg, extraHTML = '') {
                 <button class="btn btn-primary btn-sm" data-add><i class="fas fa-plus"></i> ${cfg.addLabel}</button>
             </div>
             <div class="inventory-list">
-                ${items.length ? items.map((i) => itemCard(i, cfg, reviewsFor(i.id)[0], doneThisWeek(i.id))).join('') : `
+                ${items.length ? items.map((i) => itemCard(i, cfg, reviewsFor(i.id)[0], doneThisWeek(i.id), logFor(i.id))).join('') : `
                 <div class="empty-state small"><i class="fas ${cfg.icon}"></i><h3>Nothing here yet</h3><p>${cfg.emptyText}</p></div>`}
             </div>
         </div>
@@ -53,8 +61,7 @@ export function renderInventoryPage(root, app, cfg, extraHTML = '') {
                 </aside>
             </div>` : `<div class="empty-state small"><i class="fas fa-clipboard"></i><h3>No ${cfg.kind} to review</h3><p>Add ${cfg.kind === 'crop' ? 'a crop' : 'a livestock group'} to your inventory to start weekly reporting.</p></div>`}
         </div>
-    </div>
-    ${extraHTML}`;
+    </div>`;
 
     root.querySelector('[data-add]').addEventListener('click', () => openItemModal(cfg, null, app));
     root.querySelectorAll('[data-select]').forEach((b) => b.addEventListener('click', () => {
@@ -62,6 +69,8 @@ export function renderInventoryPage(root, app, cfg, extraHTML = '') {
         app.refresh();
     }));
     root.querySelector('.inventory-list').addEventListener('click', (e) => {
+        const logEntry = e.target.closest('[data-log]');
+        if (logEntry) return showRecordDetail(db.get(logEntry.dataset.log), { onEdit: (r) => app.openRecord({ recordId: r.id }) });
         const b = e.target.closest('button');
         if (!b) return;
         if (b.dataset.edit) openItemModal(cfg, db.get(b.dataset.edit), app);
@@ -101,7 +110,7 @@ export function renderInventoryPage(root, app, cfg, extraHTML = '') {
     }
 }
 
-function itemCard(i, cfg, lastReview, done) {
+function itemCard(i, cfg, lastReview, done, log = []) {
     return `
     <div class="inv-card">
         <div class="inv-top">
@@ -109,7 +118,9 @@ function itemCard(i, cfg, lastReview, done) {
                 <p class="inv-meta">${cfg.meta(i).map(esc).join(' · ')}</p></div>
             <span class="badge badge-${healthBadge(i.health)}">${esc(healthLabel(i.health))}</span>
         </div>
-        ${i.lastDiagnosis ? `<p class="inv-alert"><i class="fas fa-microscope"></i> ${esc(i.lastDiagnosis.disease)} · ${esc(i.lastDiagnosis.severity)} (${fmtDate(i.lastDiagnosis.date)})</p>` : ''}
+        ${log.length ? `<ul class="inv-log">${log.map((r) => `
+            <li data-log="${r.id}" title="View details"><i class="fas ${RECORD_KINDS[r.kind]?.icon || 'fa-file'} kind-${r.kind}"></i>
+                <span>${esc(describeRecord(r))}</span><small>${fmtDate(r.date, { day: 'numeric', month: 'short' })}</small><i class="fas fa-chevron-right"></i></li>`).join('')}</ul>` : ''}
         <div class="inv-foot">
             <span class="${done ? 'ok' : 'due'}"><i class="fas ${done ? 'fa-check-circle' : 'fa-clock'}"></i> ${done ? 'Reviewed this week' : lastReview ? `Last review ${fmtDate(lastReview.date)}` : 'Never reviewed'}</span>
             <div class="inv-actions">

@@ -199,7 +199,7 @@ function renderAnalysis(root, app, state = {}) {
         ? recs.map((r) => {
             const [tone, icon] = PRIORITY[r.priority] || PRIORITY.medium;
             return `<div class="message ai rec-item"><div class="avatar" style="background:var(--${tone})"><i class="fas fa-${CATEGORY_ICON[r.category] || icon}"></i></div>
-                <div class="message-content" style="border-left:4px solid var(--${tone})"><strong style="color:var(--${tone});display:block;margin-bottom:4px;">${esc(r.title)}</strong>${esc(r.detail)}</div></div>`;
+                <div class="message-content" style="border-left:4px solid var(--${tone})"><strong style="color:var(--${tone});display:block;margin-bottom:4px;">${esc(String(r.title).replace(/\s*[(\[](high|medium|low)[)\]]\s*$/i, ''))}</strong>${esc(r.detail)}</div></div>`;
         }).join('')
         : `<div class="empty-state small"><i class="fas fa-lightbulb"></i><p>Recommendations will appear after your first analysis.</p></div>`;
 }
