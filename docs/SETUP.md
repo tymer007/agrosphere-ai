@@ -61,9 +61,18 @@ Deletes are soft (`deleted = TRUE`). The demo account is never synced; it stays 
 
 ### Setup (about 3 minutes)
 
-1. **Vercel → your project → Storage → Create Database → Blob.**
-   - Name it `agrosphere-data` and choose **Private** access if asked.
-   - Connect it to the project for all environments. Vercel adds `BLOB_READ_WRITE_TOKEN` for you.
+1. **Vercel → your project → Storage → Create Database → Blob**, then fill in the form:
+
+   | Field | Value |
+   |---|---|
+   | Name | `agrosphere-data` |
+   | Region | any; pick the one closest to your users, e.g. London (lhr1). It can't be changed later. |
+   | Access | **Private** (the file contains password hashes) |
+   | Custom Environment Variable Prefix | **`BLOB`**. It is a *prefix*, not the full name. `BLOB` gives `BLOB_READ_WRITE_TOKEN`, which the app reads. Typing `BLOB_READ_WRITE_TOKEN` would create `BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN` instead, and sync would stay off. |
+   | Add a read-write token env var to this connection | **Tick it.** This creates `BLOB_READ_WRITE_TOKEN`. |
+
+   Click **Create**. Vercel adds the variables to Production and Preview.
+   Check under *Settings → Environment Variables* that **`BLOB_READ_WRITE_TOKEN`** is listed.
 2. **Project → Settings → Environment Variables**, add:
    ```
    SYNC_SECRET=<long random string>      # e.g. run: openssl rand -hex 32
