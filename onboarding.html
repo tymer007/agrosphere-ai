@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set up your farm · Agrosphere AI</title>
+    <link rel="icon" href="/assets/img/logo.svg" type="image/svg+xml">
+    <script>
+        (function () {
+            var p = localStorage.getItem('agro_theme_pref') || localStorage.getItem('agro_theme') || 'system';
+            var t = p === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : p;
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/brand.css">
+    <link rel="stylesheet" href="/assets/css/dashboard-extra.css">
+    <link rel="stylesheet" href="/assets/css/onboarding.css">
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script type="module" src="/js/pages/onboarding.js"></script>
+</head>
+<body>
+    <agro-theme-toggle></agro-theme-toggle>
+
+    <div class="ob-shell">
+        <header class="ob-header">
+            <a href="/home" class="ob-brand"><agro-logo size="42"></agro-logo><span>Agrosphere</span></a>
+            <ol class="ob-steps" id="obSteps"></ol>
+            <button class="btn btn-glass btn-sm" id="obLogout"><i class="fas fa-sign-out-alt"></i> Log out</button>
+        </header>
+        <main id="obMain" class="ob-main"></main>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agrosphere AI - Smart Farming Assistant</title>
+    <meta name="description" content="AI-powered farm assistant for African farmers: weather alerts, farm mapping, crop disease diagnosis and weekly farm records.">
+    <link rel="icon" href="/assets/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/site.css">
+    <link rel="stylesheet" href="/assets/css/brand.css">
+    <link rel="stylesheet" href="/assets/css/site-extra.css">
+    <script type="module" src="/js/pages/home.js"></script>
+</head>
+<body>
+    <agro-site-nav active="home"></agro-site-nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-robot"></i>
+                <span>AI-Powered Agricultural Assistant</span>
+            </div>
+            <h1>Welcome to <span>Agrosphere</span></h1>
+            <p>Empowering African farmers with cutting-edge artificial intelligence technology. Get real-time weather alerts, farm mapping, crop disease detection, and personalized farming recommendations - all in one powerful platform.</p>
+            <div class="hero-buttons">
+                <a href="/signup" class="btn-primary">
+                    <i class="fas fa-user"></i>
+                    Get Started Free
+                </a>
+                <a href="#about" class="btn-secondary">
+                    Learn More
+                </a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section about-section" id="about">
+        <div class="section-header">
+            <h2>Why Choose Agrosphere?</h2>
+            <p>Comprehensive AI-powered tools designed specifically for modern African farming needs</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                <h3>Crop Assistant</h3>
+                <p>Get instant answers to farming questions, crop recommendations, and pest advice from an AI assistant that knows your farm's records.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-cloud-sun-rain"></i></div>
+                <h3>Smart Weather Alerts</h3>
+                <p>Receive local forecasts and farm alerts tailored to your farm's exact location, helping you plan planting, spraying and harvesting.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-satellite"></i></div>
+                <h3>Satellite Farm Mapping</h3>
+                <p>Find your farm on satellite imagery, drop a pin, draw your field boundaries and mark key points like water sources and pens.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-bug"></i></div>
+                <h3>Pest & Disease Detection</h3>
+                <p>Upload a photo of an affected plant and get a diagnosis with treatment and prevention advice, saved straight to that crop's record.</p>
+            </div>
+            <div class="feature-card">
+                <span class="soon-tag">Coming soon</span>
+                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Market Intelligence</h3>
+                <p>Market prices, demand forecasts and profit tracking to help you decide when to sell.</p>
+            </div>
+            <div class="feature-card">
+                <span class="soon-tag">Coming soon</span>
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>Farmer Community</h3>
+                <p>Connect with farmers, share knowledge, ask questions, and learn from agricultural experts in your region.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section stats-section">
+        <div class="stats-grid">
+            <div class="stat-item"><h3>7-Day</h3><p>Local Farm Forecasts</p></div>
+            <div class="stat-item"><h3>4</h3><p>Languages: English, Hausa, Yoruba, Igbo</p></div>
+            <div class="stat-item"><h3>1 min</h3><p>Weekly Crop & Livestock Reviews</p></div>
+            <div class="stat-item"><h3>24/7</h3><p>AI Support Available</p></div>
+        </div>
+    </section>
+
+    <!-- Weather Section -->
+    <section class="section weather-section" id="weather">
+        <div class="section-header">
+            <h2><i class="fas fa-cloud-sun-rain"></i> Weather Intelligence</h2>
+            <p>Real-time weather and a 7-day forecast with farm alerts for your location</p>
+        </div>
+
+        <div class="weather-container">
+            <form class="location-bar" id="weatherSearch">
+                <div class="location-input-group">
+                    <i class="fas fa-search-location"></i>
+                    <input type="text" id="locationInput" placeholder="Enter your farm location (e.g., Kaduna, Nigeria)" autocomplete="off">
+                    <div class="geo-results hidden" id="geoResults"></div>
+                </div>
+                <button class="location-btn" type="submit"><i class="fas fa-search"></i> Get Weather</button>
+                <button class="location-btn" type="button" id="gpsBtn" style="background: var(--accent-gold);"><i class="fas fa-location-arrow"></i> Use GPS</button>
+            </form>
+
+            <div class="current-weather" id="currentWeather">
+                <div class="weather-main">
+                    <div>
+                        <h2 id="cityName" style="margin-bottom: 10px;">Finding your location...</h2>
+                        <p class="weather-sub" id="coordsText"><i class="fas fa-map-marker-alt"></i> -</p>
+                        <div class="temperature" id="temperature">--<span>°C</span></div>
+                        <p style="font-size: 20px; margin-top: 10px;" id="conditionText">Loading weather</p>
+                        <p class="weather-status" id="weatherStatus"></p>
+                    </div>
+                    <div class="weather-icon-main"><i class="fas fa-cloud-sun" id="mainIcon"></i></div>
+                </div>
+                <div class="weather-details">
+                    <div class="detail-item"><i class="fas fa-tint"></i><p>Humidity</p><h4 id="wxHumidity">-</h4></div>
+                    <div class="detail-item"><i class="fas fa-wind"></i><p>Wind Speed</p><h4 id="wxWind">-</h4></div>
+                    <div class="detail-item"><i class="fas fa-thermometer-half"></i><p>Feels Like</p><h4 id="wxFeels">-</h4></div>
+                    <div class="detail-item"><i class="fas fa-compress-arrows-alt"></i><p>Pressure</p><h4 id="wxPressure">-</h4></div>
+                </div>
+                <div class="forecast-grid" id="forecastGrid"></div>
+            </div>
+
+            <div class="alerts-container">
+                <h3 style="margin-bottom: 20px; color: var(--dark-earth);"><i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> Agricultural Alerts</h3>
+                <div id="alertsList"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section (mockup) -->
+    <section class="section map-section" id="map">
+        <div class="section-header">
+            <h2><i class="fas fa-map-marked-alt"></i> Farm Mapping</h2>
+            <p>Map your farm in under a minute - this is how it works inside Agrosphere</p>
+        </div>
+
+        <div class="map-container-wrapper">
+            <div class="map-sidebar">
+                <h3 style="margin-bottom: 20px; color: var(--dark-earth);">Map your farm in 4 steps</h3>
+                <div class="field-item map-step active">
+                    <div class="field-header"><span class="map-step-num">1</span><span class="field-name">Search your address</span></div>
+                    <p style="font-size: 13px; color: #666;">We use the location from your profile and jump straight to it on the satellite map.</p>
+                </div>
+                <div class="field-item map-step">
+                    <div class="field-header"><span class="map-step-num">2</span><span class="field-name">Drop a pin</span></div>
+                    <p style="font-size: 13px; color: #666;">Tap your farm's exact spot. Your weather and alerts come from this point.</p>
+                </div>
+                <div class="field-item map-step">
+                    <div class="field-header"><span class="map-step-num">3</span><span class="field-name">Draw boundaries & mark points</span></div>
+                    <p style="font-size: 13px; color: #666;">Outline each field, set a radius, and mark water sources, pens or stores.</p>
+                </div>
+                <div class="field-item map-step">
+                    <div class="field-header"><span class="map-step-num">4</span><span class="field-name">Save - or skip</span></div>
+                    <p style="font-size: 13px; color: #666;">Prefer not to map? Skip and we'll use your address instead.</p>
+                </div>
+                <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, var(--primary-green), var(--light-green)); border-radius: 16px; color: #fff; text-align: center;">
+                    <h4 style="margin-bottom: 10px;">Free with every account</h4>
+                    <a href="/signup" class="btn-secondary" style="justify-content:center; padding: 12px 20px; font-size: 14px;">Map my farm</a>
+                </div>
+            </div>
+
+            <div class="map-area">
+                <div class="map-mock" aria-label="Illustration of the farm mapping tool">
+                    <svg class="map-bg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                        <defs>
+                            <pattern id="rows" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(28)"><rect width="12" height="12" fill="#5d7f3a"/><rect width="5" height="12" fill="#6b8f45"/></pattern>
+                            <pattern id="rows2" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-15)"><rect width="10" height="10" fill="#8a8f4a"/><rect width="4" height="10" fill="#9ba257"/></pattern>
+                            <pattern id="trees" width="26" height="26" patternUnits="userSpaceOnUse"><rect width="26" height="26" fill="#2e4a26"/><circle cx="8" cy="8" r="7" fill="#355a2b"/><circle cx="20" cy="18" r="8" fill="#3d6630"/></pattern>
+                        </defs>
+                        <rect width="800" height="600" fill="url(#trees)"/>
+                        <polygon points="40,120 330,80 360,300 70,340" fill="url(#rows)"/>
+                        <polygon points="360,300 330,80 560,110 600,320" fill="url(#rows2)"/>
+                        <polygon points="70,340 360,300 380,560 90,590" fill="#7a6a45"/>
+                        <polygon points="380,560 360,300 600,320 640,570" fill="url(#rows)"/>
+                        <polygon points="600,320 560,110 780,140 790,360" fill="#6d7d3c"/>
+                        <path d="M0,360 C200,330 420,320 800,380" stroke="#c9b48a" stroke-width="10" fill="none" opacity="0.8"/>
+                        <circle cx="690" cy="470" r="44" fill="#3f7fa8" opacity="0.85"/>
+                        <rect x="610" y="190" width="40" height="28" fill="#b7b1a3"/>
+                        <polygon class="draw-fill draw-path" points="330,80 560,110 600,320 360,300" fill="#d4a574" fill-opacity="0.28" stroke="#fbbf24" stroke-width="4" stroke-linejoin="round"/>
+                        <g fill="#fff" stroke="#fbbf24" stroke-width="3"><circle cx="330" cy="80" r="7"/><circle cx="560" cy="110" r="7"/><circle cx="600" cy="320" r="7"/><circle cx="360" cy="300" r="7"/></g>
+                        <circle cx="384" cy="264" r="10" fill="none" stroke="#fff" stroke-width="3" class="radius-ring"/>
+                        <g><circle cx="630" cy="204" r="9" fill="#3498db" stroke="#fff" stroke-width="3"/><circle cx="690" cy="470" r="9" fill="#3498db" stroke="#fff" stroke-width="3"/></g>
+                    </svg>
+                    <div class="mock-search"><i class="fas fa-search"></i><span class="typed">Ibadan, Oyo State, Nigeria</span></div>
+                    <div class="mock-tools">
+                        <span title="Pin"><i class="fas fa-map-pin"></i></span>
+                        <span class="on" title="Draw boundary"><i class="fas fa-draw-polygon"></i></span>
+                        <span title="Radius"><i class="fas fa-bullseye"></i></span>
+                        <span title="Mark point"><i class="fas fa-map-marker-alt"></i></span>
+                    </div>
+                    <i class="fas fa-map-marker-alt mock-pin"></i>
+                    <div class="mock-card"><i class="fas fa-seedling"></i><div><strong>North Maize Field</strong><small>5.2 ha · boundary saved · 2 points</small></div></div>
+                    <div class="mock-save"><span><i class="fas fa-check"></i> Save farm map</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="section pricing-section" id="pricing">
+        <div class="section-header">
+            <h2>Simple, Farmer-Friendly Plans</h2>
+            <p>Start free today. Pro unlocks more AI when we launch it.</p>
+            <div class="billing-toggle" role="tablist">
+                <button class="active" data-billing="monthly">Monthly</button>
+                <button data-billing="yearly">Yearly <em>2 months free</em></button>
+            </div>
+        </div>
+
+        <div class="pricing-grid">
+            <div class="price-card">
+                <h3>Free & Demo</h3>
+                <p class="price-desc">Everything you need to run your farm records with AI help</p>
+                <div class="price">₦0<small> / forever</small></div>
+                <p class="price-note">Try the demo account - no sign-up needed</p>
+                <ul class="price-features">
+                    <li><i class="fas fa-check"></i> Unlimited crops, livestock & weekly records</li>
+                    <li><i class="fas fa-check"></i> Weather & 7-day forecast for your farm</li>
+                    <li><i class="fas fa-check"></i> Farm mapping with boundaries & points</li>
+                    <li><i class="fas fa-check"></i> AI chat - 5 messages a day</li>
+                    <li><i class="fas fa-check"></i> AI farm analysis - 3 a day</li>
+                    <li><i class="fas fa-check"></i> AI plant diagnosis - 1 a day</li>
+                    <li><i class="fas fa-check"></i> PDF & Excel reports</li>
+                </ul>
+                <a href="/signup" class="btn-outline" style="justify-content:center"><i class="fas fa-user-plus"></i> Get started free</a>
+            </div>
+
+            <div class="price-card featured">
+                <span class="price-badge">Most value</span>
+                <h3>Pro</h3>
+                <p class="price-desc">More AI for growing farms and cooperatives</p>
+                <div class="price" id="proPrice">₦4,500<small> / month</small></div>
+                <p class="price-note" id="proNote">Billed monthly</p>
+                <ul class="price-features">
+                    <li><i class="fas fa-check"></i> Everything in Free</li>
+                    <li><i class="fas fa-check"></i> AI chat - 50 messages a day</li>
+                    <li><i class="fas fa-check"></i> AI farm analysis - 10 a day</li>
+                    <li><i class="fas fa-check"></i> AI plant diagnosis - 10 a day</li>
+                    <li><i class="fas fa-check"></i> AI animal diagnosis</li>
+                    <li><i class="fas fa-check"></i> Profit & loss tracking</li>
+                    <li><i class="fas fa-check"></i> Priority support</li>
+                </ul>
+                <button class="btn-primary" disabled style="justify-content:center"><i class="fas fa-hourglass-half"></i> Coming soon</button>
+                <p class="price-testing">We're in our testing phase - Pro isn't available yet.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA (sign up / log in live on their own pages) -->
+    <section class="auth-section" id="get-started">
+        <div class="auth-container">
+            <div class="auth-info">
+                <h2>Start Your Smart Farming Journey</h2>
+                <p>Join African farmers using Agrosphere AI to keep better records, catch problems early and farm more sustainably.</p>
+                <ul class="benefit-list">
+                    <li><i class="fas fa-check"></i><span>Free plan - no credit card required</span></li>
+                    <li><i class="fas fa-check"></i><span>AI farming assistant that knows your farm</span></li>
+                    <li><i class="fas fa-check"></i><span>Weather alerts and 7-day forecasts</span></li>
+                    <li><i class="fas fa-check"></i><span>Map your fields on satellite imagery</span></li>
+                </ul>
+            </div>
+            <div class="auth-card cta-card">
+                <h3>Ready to begin?</h3>
+                <p>Create your free account in under a minute, or look around with the demo account.</p>
+                <a href="/signup" class="btn-primary"><i class="fas fa-user-plus"></i> Create free account</a>
+                <a href="/login" class="btn-secondary"><i class="fas fa-sign-in-alt"></i> Log in</a>
+                <a href="/login?demo=1" style="color: var(--accent-gold); text-decoration: none; font-size: 14px;"><i class="fas fa-eye"></i> Try the demo account</a>
+            </div>
+        </div>
+    </section>
+
+    <agro-site-footer></agro-site-footer>
+</body>
+</html>

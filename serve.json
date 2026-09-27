@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/", "destination": "/home", "type": 302 },
+    { "source": "/index", "destination": "/home", "type": 302 }
+  ]
+}

@@ -1,0 +1,3418 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Agrosphere AI - Intelligent Farming Assistant</title>
+    <link rel="stylesheet" href="login.html">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            /* Dark Mode (Default) */
+            --primary: #059669;
+            --primary-light: #34d399;
+            --primary-dark: #047857;
+            --accent: #f59e0b;
+            --accent-light: #fbbf24;
+            --danger: #ef4444;
+            --warning: #f97316;
+            --info: #3b82f6;
+            --success: #10b981;
+            --bg-gradient: linear-gradient(135deg, #064e3b 0%, #065f46 30%, #047857 60%, #059669 100%);
+            --glass: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-glow: 0 0 60px rgba(52, 211, 153, 0.3);
+            --radius: 20px;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Text Colors */
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-inverse: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --bg-sidebar: rgba(6, 78, 59, 0.98);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Light Mode Variables */
+        [data-theme="light"] {
+            --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+            --glass: rgba(255, 255, 255, 0.98);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            --shadow-glow: 0 0 60px rgba(52, 211, 153, 0.2);
+            
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-inverse: #064e3b;
+            --bg-card: #ffffff;
+            --bg-sidebar: #ffffff;
+            --border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.5s ease;
+        }
+
+        /* THEME TOGGLE */
+        .theme-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 998;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--accent);
+            transition: var(--transition);
+        }
+        @media (min-width: 1024px) {
+            .theme-toggle { top: 30px; right: 30px; }
+        }
+        .theme-toggle:hover { transform: scale(1.1) rotate(15deg); }
+
+        /* LANGUAGE SELECTOR */
+        .lang-selector {
+            position: fixed;
+            top: 140px;
+            right: 20px;
+            z-index: 998;
+        }
+        @media (min-width: 1024px) {
+            .lang-selector { top: 90px; right: 30px; }
+        }
+        
+        .lang-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+        .lang-btn:hover { transform: scale(1.1); }
+        
+        .lang-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 10px;
+            min-width: 150px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        .lang-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+        .lang-option:hover { background: rgba(52, 211, 153, 0.1); }
+        .lang-option.active { background: var(--primary); color: white; }
+        .lang-option img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .lang-option span {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* LOADER */
+        .loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-gradient);
+            z-index: 10000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        .loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        
+        .loader-ring {
+            width: 120px; height: 120px;
+            border-radius: 50%; position: relative;
+            margin-bottom: 30px;
+        }
+        @media (min-width: 768px) {
+            .loader-ring { width: 180px; height: 180px; margin-bottom: 40px; }
+        }
+        
+        .loader-ring::before, .loader-ring::after {
+            content: ''; position: absolute;
+            border-radius: 50%; border: 3px solid transparent;
+        }
+        @media (min-width: 768px) {
+            .loader-ring::before, .loader-ring::after { border-width: 4px; }
+        }
+        
+        .loader-ring::before {
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-top-color: #34d399; border-right-color: #fbbf24;
+            animation: spin 2s linear infinite;
+        }
+        .loader-ring::after {
+            top: 15px; left: 15px; right: 15px; bottom: 15px;
+            border-bottom-color: #34d399; border-left-color: #fbbf24;
+            animation: spin 1.5s linear infinite reverse;
+        }
+        @media (min-width: 768px) {
+            .loader-ring::after { top: 20px; left: 20px; right: 20px; bottom: 20px; }
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loader-icon {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem; color: white;
+            animation: pulse-scale 2s ease-in-out infinite;
+        }
+        @media (min-width: 768px) {
+            .loader-icon { font-size: 3.5rem; }
+        }
+        
+        @keyframes pulse-scale {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.8; }
+        }
+        
+        .loader-text { 
+            color: white; 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            letter-spacing: 0.1em; 
+            text-align: center;
+            padding: 0 20px;
+        }
+        @media (min-width: 768px) {
+            .loader-text { font-size: 2rem; letter-spacing: 0.15em; }
+        }
+        
+        .loader-text span { color: #fbbf24; }
+        
+        .loader-status { 
+            color: rgba(255,255,255,0.7); 
+            font-size: 0.85rem; 
+            margin-top: 15px; 
+            text-align: center;
+            padding: 0 20px;
+        }
+        @media (min-width: 768px) {
+            .loader-status { font-size: 0.95rem; margin-top: 20px; }
+        }
+
+        /* MAIN APP */
+        .app { 
+            opacity: 0; 
+            transform: translateY(30px); 
+            transition: opacity 1s ease, transform 1s ease; 
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+        @media (min-width: 1024px) {
+            .app { padding-top: 0; }
+        }
+        .app.loaded { opacity: 1; transform: translateY(0); }
+
+        /* MOBILE HEADER */
+        .mobile-header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 70px;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 999;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.5s ease;
+        }
+        @media (min-width: 1024px) {
+            .mobile-header { display: none; }
+        }
+        
+        .mobile-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .mobile-brand-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #34d399, #fbbf24);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: white;
+        }
+        
+        .mobile-brand-text h1 { 
+            color: var(--text-inverse); 
+            font-size: 1.1rem; 
+            font-weight: 800; 
+            line-height: 1.2;
+        }
+        .mobile-brand-text span { 
+            color: #fbbf24; 
+            font-size: 0.65rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.15em;
+            font-weight: 600;
+        }
+        
+        .menu-toggle {
+            width: 45px; height: 45px;
+            border: none; background: rgba(255,255,255,0.1);
+            border-radius: 12px; color: var(--text-inverse);
+            font-size: 1.3rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .menu-toggle:hover { background: rgba(255,255,255,0.2); }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0;
+            width: 85%;
+            max-width: 320px;
+            height: 100vh;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(30px);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            z-index: 1001;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media (min-width: 1024px) {
+            .sidebar {
+                width: 280px;
+                transform: translateX(0);
+                padding: 30px 20px;
+            }
+        }
+        .sidebar.open { transform: translateX(0); }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .sidebar-overlay.active { opacity: 1; visibility: visible; }
+        
+        .brand { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 40px; 
+            padding-bottom: 25px; 
+            border-bottom: 1px solid var(--border-color);
+        }
+        @media (min-width: 1024px) {
+            .brand { margin-bottom: 50px; padding-bottom: 30px; }
+        }
+        
+        .brand-icon {
+            width: 50px; height: 50px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #34d399, #fbbf24);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: white;
+            box-shadow: 0 10px 30px rgba(52, 211, 153, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+        @media (min-width: 1024px) {
+            .brand-icon { width: 55px; height: 55px; border-radius: 16px; font-size: 1.6rem; }
+        }
+        
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        
+        .brand-text h1 { 
+            color: var(--text-inverse); 
+            font-size: 1.2rem; 
+            font-weight: 800;
+            transition: color 0.5s ease;
+        }
+        @media (min-width: 1024px) {
+            .brand-text h1 { font-size: 1.4rem; }
+        }
+        
+        .brand-text span { 
+            color: #fbbf24; 
+            font-size: 0.65rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.2em; 
+            font-weight: 600;
+        }
+        @media (min-width: 1024px) {
+            .brand-text span { font-size: 0.7rem; }
+        }
+        
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 8px; }
+        
+        .nav-link {
+            display: flex; 
+            align-items: center; 
+            gap: 14px;
+            padding: 14px 18px; 
+            border-radius: 14px;
+            color: var(--text-inverse);
+            opacity: 0.7;
+            text-decoration: none;
+            font-weight: 500; 
+            font-size: 0.9rem;
+            transition: var(--transition); 
+            cursor: pointer; 
+            position: relative; 
+            overflow: hidden;
+        }
+        @media (min-width: 1024px) {
+            .nav-link { padding: 16px 20px; border-radius: 16px; font-size: 0.95rem; }
+        }
+        
+        .nav-link::before {
+            content: ''; 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%;
+            background: linear-gradient(90deg, rgba(52,211,153,0.2), transparent);
+            transform: translateX(-100%); 
+            transition: transform 0.4s ease;
+        }
+        .nav-link:hover::before, .nav-link.active::before { transform: translateX(0); }
+        .nav-link:hover, .nav-link.active { 
+            color: var(--text-inverse);
+            opacity: 1;
+            background: rgba(52, 211, 153, 0.1);
+        }
+        
+        .nav-link i { 
+            width: 24px; 
+            text-align: center; 
+            font-size: 1rem;
+        }
+        @media (min-width: 1024px) {
+            .nav-link i { font-size: 1.1rem; }
+        }
+        
+        .nav-link.active i { color: #fbbf24; }
+        
+        .nav-badge {
+            margin-left: auto; 
+            background: #ef4444; 
+            color: white;
+            font-size: 0.7rem; 
+            padding: 3px 8px; 
+            border-radius: 10px; 
+            font-weight: 600;
+        }
+
+        /* MAIN CONTENT */
+        .main-content { 
+            margin-left: 0; 
+            padding: 20px; 
+            min-height: 100vh;
+            transition: margin-left 0.5s ease;
+        }
+        @media (min-width: 1024px) {
+            .main-content { margin-left: 280px; padding: 30px; }
+        }
+        
+        .top-bar { 
+            display: flex; 
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px; 
+        }
+        @media (min-width: 640px) {
+            .top-bar { flex-direction: row; justify-content: space-between; align-items: center; }
+        }
+        
+        .page-title h1 { 
+            color: var(--text-inverse); 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            margin-bottom: 5px;
+            transition: color 0.5s ease;
+        }
+        @media (min-width: 768px) {
+            .page-title h1 { font-size: 2rem; }
+        }
+        
+        .page-title p { 
+            color: var(--text-inverse);
+            opacity: 0.7; 
+            font-size: 0.9rem;
+            transition: color 0.5s ease;
+        }
+        
+        .top-actions { 
+            display: flex; 
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 20px; 
+            border-radius: 12px; 
+            font-weight: 600;
+            font-size: 0.85rem; 
+            border: none; 
+            cursor: pointer;
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px;
+            transition: var(--transition); 
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        @media (min-width: 768px) {
+            .btn { padding: 12px 24px; font-size: 0.9rem; }
+        }
+        
+        .btn-glass {
+            background: rgba(255,255,255,0.15); 
+            color: var(--text-inverse);
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        [data-theme="light"] .btn-glass {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+        }
+        .btn-glass:hover { 
+            background: rgba(255,255,255,0.25); 
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #34d399, #059669); 
+            color: white;
+            box-shadow: 0 10px 30px rgba(52, 211, 153, 0.4);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 15px 40px rgba(52, 211, 153, 0.5);
+        }
+        
+        .btn-danger { 
+            background: linear-gradient(135deg, #ef4444, #dc2626); 
+            color: white;
+        }
+
+        /* GLASS CARDS */
+        .glass-card {
+            background: var(--glass); 
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); 
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px; 
+            transition: var(--transition);
+        }
+        @media (min-width: 768px) {
+            .glass-card { padding: 28px; }
+        }
+        .glass-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3), var(--shadow-glow);
+        }
+
+        /* DASHBOARD GRID */
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 16px; 
+            margin-bottom: 25px; 
+        }
+        @media (min-width: 640px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        }
+        @media (min-width: 1024px) {
+            .dashboard-grid { grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 30px; }
+        }
+        
+        .stat-card {
+            background: var(--glass); 
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius); 
+            padding: 20px;
+            border: 1px solid var(--glass-border); 
+            position: relative; 
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        @media (min-width: 768px) {
+            .stat-card { padding: 24px; }
+        }
+        
+        .stat-card::before {
+            content: ''; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-light), var(--accent));
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        
+        .stat-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 14px; 
+        }
+        
+        .stat-icon {
+            width: 45px; 
+            height: 45px; 
+            border-radius: 12px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.1rem;
+        }
+        @media (min-width: 768px) {
+            .stat-icon { width: 50px; height: 50px; border-radius: 14px; font-size: 1.3rem; }
+        }
+        
+        .stat-icon.green { background: #d1fae5; color: #059669; }
+        .stat-icon.blue { background: #dbeafe; color: #3b82f6; }
+        .stat-icon.orange { background: #ffedd5; color: #f97316; }
+        .stat-icon.red { background: #fee2e2; color: #ef4444; }
+        
+        .stat-trend { 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+            padding: 4px 10px; 
+            border-radius: 20px; 
+        }
+        @media (min-width: 768px) {
+            .stat-trend { font-size: 0.8rem; }
+        }
+        
+        .stat-trend.up { background: #d1fae5; color: #059669; }
+        .stat-trend.down { background: #fee2e2; color: #ef4444; }
+        
+        .stat-value { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            color: var(--text-primary); 
+            margin-bottom: 4px;
+            transition: color 0.5s ease;
+        }
+        @media (min-width: 768px) {
+            .stat-value { font-size: 2.2rem; }
+        }
+        
+        .stat-label { 
+            color: var(--text-secondary); 
+            font-size: 0.85rem; 
+            font-weight: 500;
+            transition: color 0.5s ease;
+        }
+
+        .content-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 20px; 
+        }
+        @media (min-width: 1024px) {
+            .content-grid { grid-template-columns: 2fr 1fr; gap: 24px; }
+        }
+        
+        .section-title {
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            color: var(--text-primary);
+            margin-bottom: 16px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            transition: color 0.5s ease;
+        }
+        @media (min-width: 768px) {
+            .section-title { font-size: 1.2rem; margin-bottom: 20px; }
+        }
+        
+        .section-title i { color: var(--primary); }
+
+        /* AI WIDGET */
+        .ai-widget { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 997; 
+        }
+        @media (min-width: 768px) {
+            .ai-widget { bottom: 30px; right: 30px; }
+        }
+        
+        .ai-button {
+            width: 56px; 
+            height: 56px; 
+            border-radius: 50%;
+            background: linear-gradient(135deg, #34d399, #059669);
+            border: none; 
+            color: white; 
+            font-size: 1.4rem;
+            cursor: pointer; 
+            box-shadow: 0 10px 40px rgba(52, 211, 153, 0.5);
+            transition: var(--transition); 
+            animation: pulse-glow 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (min-width: 768px) {
+            .ai-button { width: 65px; height: 65px; font-size: 1.6rem; }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 10px 40px rgba(52, 211, 153, 0.5); }
+            50% { box-shadow: 0 10px 60px rgba(52, 211, 153, 0.8), 0 0 0 15px rgba(52, 211, 153, 0.1); }
+        }
+        .ai-button:hover { transform: scale(1.1); }
+        
+        .ai-panel {
+            position: absolute; 
+            bottom: 70px; 
+            right: 0; 
+            width: calc(100vw - 40px);
+            max-width: 380px;
+            height: 500px;
+            background: var(--glass); 
+            backdrop-filter: blur(30px);
+            border-radius: var(--radius); 
+            box-shadow: var(--shadow);
+            display: none; 
+            flex-direction: column; 
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+        @media (min-width: 768px) {
+            .ai-panel { width: 420px; height: 550px; bottom: 80px; }
+        }
+        .ai-panel.active { 
+            display: flex; 
+            animation: slideUp 0.4s ease; 
+        }
+        
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(30px) scale(0.95); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+        
+        .ai-header {
+            background: linear-gradient(135deg, #059669, #047857);
+            padding: 16px; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+        }
+        @media (min-width: 768px) {
+            .ai-header { padding: 20px; gap: 15px; }
+        }
+        
+        .ai-avatar {
+            width: 42px; 
+            height: 42px; 
+            border-radius: 50%; 
+            background: white;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 1.2rem; 
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @media (min-width: 768px) {
+            .ai-avatar { width: 48px; height: 48px; font-size: 1.4rem; }
+        }
+        
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
+        .ai-status { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            font-size: 0.75rem; 
+            opacity: 0.9; 
+        }
+        @media (min-width: 768px) {
+            .ai-status { font-size: 0.8rem; }
+        }
+        
+        .ai-status::before { 
+            content: ''; 
+            width: 8px; 
+            height: 8px; 
+            background: #34d399; 
+            border-radius: 50%; 
+            animation: blink 2s ease-in-out infinite; 
+        }
+        
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .ai-messages { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 16px; 
+            background: var(--bg-card);
+            transition: background 0.5s ease;
+        }
+        @media (min-width: 768px) {
+            .ai-messages { padding: 20px; }
+        }
+        
+        .message { 
+            margin-bottom: 14px; 
+            animation: fadeIn 0.3s ease; 
+            max-width: 90%;
+        }
+        @media (min-width: 768px) {
+            .message { max-width: 85%; margin-bottom: 16px; }
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .message.ai { 
+            display: flex; 
+            gap: 10px; 
+        }
+        
+        .message.ai .avatar {
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%;
+            background: linear-gradient(135deg, #34d399, #059669);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            color: white; 
+            font-size: 0.8rem; 
+            flex-shrink: 0;
+        }
+        @media (min-width: 768px) {
+            .message.ai .avatar { width: 36px; height: 36px; font-size: 0.9rem; }
+        }
+        
+        .message-content {
+            background: white; 
+            padding: 12px 16px; 
+            border-radius: 18px;
+            border-bottom-left-radius: 4px; 
+            font-size: 0.9rem;
+            line-height: 1.6; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            color: var(--text-primary);
+        }
+        @media (min-width: 768px) {
+            .message-content { padding: 14px 18px; font-size: 0.95rem; }
+        }
+        
+        .message.user { 
+            display: flex; 
+            justify-content: flex-end; 
+            margin-left: auto; 
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white; 
+            border-bottom-right-radius: 4px; 
+            border-bottom-left-radius: 18px;
+        }
+        
+        .ai-input-area {
+            padding: 12px 16px; 
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            display: flex; 
+            gap: 10px; 
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+        
+        .ai-input {
+            flex: 1; 
+            padding: 12px 16px; 
+            border: 2px solid var(--border-color);
+            border-radius: 25px; 
+            font-size: 0.9rem; 
+            outline: none; 
+            transition: var(--transition);
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .ai-input:focus { border-color: #34d399; }
+        .ai-input::placeholder { color: var(--text-secondary); }
+        
+        .ai-send, .ai-voice {
+            width: 42px; 
+            height: 42px; 
+            border-radius: 50%; 
+            border: none;
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 1rem; 
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        
+        .ai-send { 
+            background: linear-gradient(135deg, #34d399, #059669); 
+            color: white; 
+        }
+        .ai-voice { 
+            background: #fee2e2; 
+            color: #ef4444; 
+        }
+        .ai-voice:hover { background: #fecaca; }
+        .ai-voice.recording { animation: pulse-red 1s ease-in-out infinite; }
+        
+        @keyframes pulse-red { 
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 
+        }
+
+        /* FORMS */
+        .form-group { margin-bottom: 18px; }
+        @media (min-width: 768px) {
+            .form-group { margin-bottom: 20px; }
+        }
+        
+        .form-label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: color 0.5s ease;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 2px solid var(--border-color);
+            border-radius: 12px; 
+            font-size: 0.95rem; 
+            transition: var(--transition);
+            outline: none; 
+            font-family: inherit;
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: #34d399; 
+            box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1);
+        }
+        .form-textarea { 
+            min-height: 100px; 
+            resize: vertical; 
+        }
+        @media (min-width: 768px) {
+            .form-textarea { min-height: 120px; }
+        }
+        
+        .form-row { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 16px; 
+        }
+        @media (min-width: 640px) {
+            .form-row { grid-template-columns: 1fr 1fr; gap: 20px; }
+        }
+        
+        .form-grid-3 { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 16px; 
+        }
+        @media (min-width: 640px) {
+            .form-grid-3 { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        }
+
+        /* RADIO GROUPS */
+        .radio-group { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+        }
+        
+        .radio-label {
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            padding: 10px 16px; 
+            background: var(--bg-card);
+            border: 2px solid var(--border-color); 
+            border-radius: 10px;
+            cursor: pointer; 
+            transition: var(--transition); 
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+        @media (min-width: 768px) {
+            .radio-label { padding: 12px 20px; font-size: 0.9rem; }
+        }
+        
+        .radio-label:hover, .radio-label.active { 
+            border-color: #34d399; 
+            background: #ecfdf5; 
+        }
+        [data-theme="light"] .radio-label:hover, [data-theme="light"] .radio-label.active {
+            background: #d1fae5;
+        }
+        .radio-label input { display: none; }
+
+        /* TABLES */
+        .table-container { 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .data-table { 
+            width: 100%; 
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 14px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            transition: color 0.5s ease;
+        }
+        @media (min-width: 768px) {
+            .data-table th, .data-table td { padding: 16px; }
+        }
+        
+        .data-table th {
+            font-weight: 700; 
+            color: var(--text-primary);
+            background: var(--bg-card);
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em;
+            transition: all 0.5s ease;
+        }
+        @media (min-width: 768px) {
+            .data-table th { font-size: 0.85rem; }
+        }
+        
+        .data-table tr:hover { background: rgba(52, 211, 153, 0.05); }
+        
+        .badge { 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-success { background: #d1fae5; color: #059669; }
+        .badge-warning { background: #ffedd5; color: #f97316; }
+        .badge-danger { background: #fee2e2; color: #ef4444; }
+        .badge-info { background: #dbeafe; color: #3b82f6; }
+
+        /* MODALS */
+        .modal-overlay {
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px); 
+            z-index: 2000;
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px;
+        }
+        .modal-overlay.active { 
+            display: flex; 
+            animation: fadeIn 0.3s ease; 
+        }
+        
+        .modal {
+            background: var(--bg-card); 
+            border-radius: var(--radius);
+            width: 100%; 
+            max-width: 700px; 
+            max-height: 90vh;
+            overflow-y: auto; 
+            box-shadow: var(--shadow);
+            animation: modalSlide 0.4s ease;
+            border: 1px solid var(--border-color);
+        }
+        
+        @keyframes modalSlide { 
+            from { opacity: 0; transform: translateY(-30px) scale(0.95); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+        
+        .modal-header {
+            padding: 20px; 
+            border-bottom: 1px solid var(--border-color);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+        @media (min-width: 768px) {
+            .modal-header { padding: 24px; }
+        }
+        
+        .modal-title { 
+            font-size: 1.2rem; 
+            font-weight: 700; 
+            color: var(--text-primary);
+            transition: color 0.5s ease;
+        }
+        
+        .modal-close {
+            width: 40px; 
+            height: 40px; 
+            border: none; 
+            background: var(--bg-card);
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 1.2rem; 
+            transition: var(--transition);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .modal-close:hover { 
+            background: #fee2e2; 
+            color: #ef4444; 
+        }
+        
+        .modal-body { padding: 20px; }
+        @media (min-width: 768px) {
+            .modal-body { padding: 24px; }
+        }
+        
+        .modal-footer {
+            padding: 16px 20px; 
+            border-top: 1px solid var(--border-color);
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 12px;
+            transition: all 0.5s ease;
+        }
+        @media (min-width: 768px) {
+            .modal-footer { padding: 20px 24px; }
+        }
+
+        /* TABS */
+        .tabs { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid var(--border-color); 
+            padding-bottom: 2px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab {
+            padding: 10px 18px; 
+            border: none; 
+            background: none;
+            font-weight: 600; 
+            color: var(--text-secondary); 
+            cursor: pointer;
+            position: relative; 
+            transition: var(--transition);
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+        @media (min-width: 768px) {
+            .tab { padding: 12px 24px; font-size: 1rem; }
+        }
+        
+        .tab.active { color: var(--primary); }
+        .tab.active::after {
+            content: ''; 
+            position: absolute; 
+            bottom: -2px; 
+            left: 0;
+            width: 100%; 
+            height: 2px; 
+            background: var(--primary);
+        }
+
+        /* CHARTS */
+        .chart-container { 
+            position: relative; 
+            height: 250px; 
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 300px; }
+        }
+
+        /* SEARCH */
+        .search-box { 
+            position: relative; 
+            margin-bottom: 20px; 
+        }
+        
+        .search-box input {
+            width: 100%; 
+            padding: 14px 20px 14px 50px;
+            border: 2px solid var(--border-color); 
+            border-radius: 12px;
+            font-size: 0.95rem; 
+            outline: none; 
+            transition: var(--transition);
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .search-box input:focus { border-color: #34d399; }
+        .search-box i { 
+            position: absolute; 
+            left: 18px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: var(--text-secondary); 
+        }
+
+        /* EMPTY STATE */
+        .empty-state { 
+            text-align: center; 
+            padding: 40px 20px; 
+        }
+        @media (min-width: 768px) {
+            .empty-state { padding: 60px 20px; }
+        }
+        
+        .empty-state i { 
+            font-size: 3rem; 
+            color: var(--text-secondary); 
+            margin-bottom: 16px; 
+            opacity: 0.5;
+        }
+        @media (min-width: 768px) {
+            .empty-state i { font-size: 4rem; margin-bottom: 20px; }
+        }
+        
+        .empty-state h3 { 
+            color: var(--text-primary); 
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        @media (min-width: 768px) {
+            .empty-state h3 { font-size: 1.25rem; }
+        }
+        
+        .empty-state p { 
+            color: var(--text-secondary); 
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+        }
+
+        /* TOAST */
+        .toast-container {
+            position: fixed; 
+            top: 80px; 
+            right: 20px; 
+            z-index: 10000;
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px;
+            max-width: calc(100vw - 40px);
+        }
+        
+        .toast {
+            background: var(--bg-card); 
+            padding: 16px 20px; 
+            border-radius: 12px;
+            box-shadow: var(--shadow); 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            animation: slideInRight 0.4s ease; 
+            min-width: 280px;
+            border-left: 4px solid;
+            color: var(--text-primary);
+        }
+        
+        @keyframes slideInRight { 
+            from { transform: translateX(100%); opacity: 0; } 
+            to { transform: translateX(0); opacity: 1; } 
+        }
+        
+        .toast.success { border-left-color: #10b981; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.warning { border-left-color: #f59e0b; }
+
+        /* HIDDEN */
+        .hidden { display: none !important; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-card); }
+        ::-webkit-scrollbar-thumb { background: #34d399; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #059669; }
+
+        /* LANGUAGE FLAG ICONS */
+        .lang-flag {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+        }
+        .lang-flag.en { background: #3b82f6; }
+        .lang-flag.ha { background: #10b981; }
+        .lang-flag.yo { background: #f59e0b; }
+        .lang-flag.ig { background: #ef4444; }
+
+
+            .pro-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    /* Background */
+    .pro-loader-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .bg-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        animation: kenBurns 25s ease-in-out infinite alternate;
+    }
+    
+    @keyframes kenBurns {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.08); }
+    }
+    
+    .bg-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, 
+            rgba(6, 78, 59, 0.94) 0%, 
+            rgba(6, 95, 70, 0.90) 40%,
+            rgba(4, 120, 87, 0.86) 100%
+        );
+        backdrop-filter: blur(1px);
+    }
+    
+    /* Content Container */
+    .pro-loader-content {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        padding: 50px 40px;
+        max-width: 550px;
+        width: 90%;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Logo */
+    .pro-logo {
+        position: relative;
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 35px;
+    }
+    
+    .logo-mark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        box-shadow: 
+            0 10px 40px rgba(52, 211, 153, 0.35),
+            inset 0 -2px 10px rgba(0,0,0,0.1);
+        animation: logoPulse 2.5s ease-in-out infinite;
+    }
+    
+    @keyframes logoPulse {
+        0%, 100% { 
+            transform: translate(-50%, -50%) scale(1);
+            box-shadow: 0 10px 40px rgba(52, 211, 153, 0.35);
+        }
+        50% { 
+            transform: translate(-50%, -50%) scale(1.03);
+            box-shadow: 0 15px 50px rgba(52, 211, 153, 0.5);
+        }
+    }
+    
+    .logo-rings {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        border: 2px solid transparent;
+    }
+    
+    .ring-1 {
+        width: 100%;
+        height: 100%;
+        border-top-color: rgba(52, 211, 153, 0.5);
+        border-right-color: rgba(52, 211, 153, 0.2);
+        animation: ringRotate 3s linear infinite;
+    }
+    
+    .ring-2 {
+        width: 75%;
+        height: 75%;
+        border-bottom-color: rgba(251, 191, 36, 0.5);
+        border-left-color: rgba(251, 191, 36, 0.2);
+        animation: ringRotate 2.5s linear infinite reverse;
+    }
+    
+    @keyframes ringRotate {
+        from { transform: translate(-50%, -50%) rotate(0deg); }
+        to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    
+    /* Brand Text */
+    .pro-brand {
+        margin-bottom: 45px;
+    }
+    
+    .brand-name {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: 0.25em;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .brand-name::after {
+        content: '';
+        display: block;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(90deg, #34d399, #fbbf24);
+        margin: 18px auto 0;
+        border-radius: 2px;
+    }
+    
+    .brand-tagline {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.65);
+        font-weight: 400;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Progress Section */
+    .pro-progress {
+        margin-bottom: 25px;
+    }
+    
+    .progress-line {
+        position: relative;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+    
+    .progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #34d399, #fbbf24);
+        border-radius: 3px;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 15px rgba(52, 211, 153, 0.4);
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 80px;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-80px); }
+        100% { transform: translateX(80px); }
+    }
+    
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+    }
+    
+    .progress-text {
+        color: rgba(255, 255, 255, 0.75);
+        font-weight: 500;
+        letter-spacing: 0.03em;
+    }
+    
+    .progress-percent {
+        color: #34d399;
+        font-weight: 700;
+        font-size: 0.95rem;
+        font-variant-numeric: tabular-nums;
+    }
+    
+    /* Status Messages */
+    .status-messages {
+        height: 22px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .status-item {
+        display: block;
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 0.8rem;
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        animation: fadeInOut 2.5s ease-in-out;
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        opacity: 0;
+    }
+    
+    .status-item.active {
+        opacity: 1;
+        animation: fadeInOut 2.5s ease-in-out infinite;
+    }
+    
+    @keyframes fadeInOut {
+        0%, 100% { opacity: 0; transform: translateY(8px); }
+        20%, 80% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Corner Elements */
+    .corner-element {
+        position: absolute;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.25);
+        font-size: 1.2rem;
+        z-index: 5;
+        animation: cornerPulse 4s ease-in-out infinite;
+    }
+    
+    .corner-element.top-left {
+        top: 35px;
+        left: 35px;
+        animation-delay: 0s;
+    }
+    
+    .corner-element.top-right {
+        top: 35px;
+        right: 35px;
+        animation-delay: 1s;
+    }
+    
+    .corner-element.bottom-left {
+        bottom: 35px;
+        left: 35px;
+        animation-delay: 2s;
+    }
+    
+    .corner-element.bottom-right {
+        bottom: 35px;
+        right: 35px;
+        animation-delay: 3s;
+    }
+    
+    @keyframes cornerPulse {
+        0%, 100% { opacity: 0.25; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Hide Animation */
+    .pro-loader.hidden {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.7s ease, visibility 0.7s ease;
+    }
+    
+    .pro-loader.hidden .pro-loader-content {
+        transform: scale(0.96);
+        opacity: 0;
+        transition: all 0.7s ease;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .pro-loader-content {
+            padding: 40px 25px;
+            border-radius: 20px;
+        }
+        
+        .brand-name {
+            font-size: 1.6rem;
+            letter-spacing: 0.2em;
+        }
+        
+        .brand-tagline {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+        }
+        
+        .pro-logo {
+            width: 75px;
+            height: 75px;
+        }
+        
+        .logo-mark {
+            width: 50px;
+            height: 50px;
+            font-size: 1.4rem;
+        }
+        
+        .corner-element {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+        
+        .corner-element.top-left,
+        .corner-element.top-right {
+            top: 20px;
+        }
+        
+        .corner-element.bottom-left,
+        .corner-element.bottom-right {
+            bottom: 20px;
+        }
+        
+        .corner-element.top-left,
+        .corner-element.bottom-left {
+            left: 20px;
+        }
+        
+        .corner-element.top-right,
+        .corner-element.bottom-right {
+            right: 20px;
+        }
+    }
+
+     * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- THEME TOGGLE -->
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+
+    <!-- LANGUAGE SELECTOR -->
+    <div class="lang-selector">
+        <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
+            <span id="currentLang">EN</span>
+        </button>
+        <div class="lang-dropdown" id="langDropdown">
+            <div class="lang-option active" onclick="changeLanguage('en')">
+                <span class="lang-flag en">EN</span>
+                <span data-i18n="lang_en">English</span>
+            </div>
+            <div class="lang-option" onclick="changeLanguage('ha')">
+                <span class="lang-flag ha">HA</span>
+                <span data-i18n="lang_ha">Hausa</span>
+            </div>
+            <div class="lang-option" onclick="changeLanguage('yo')">
+                <span class="lang-flag yo">YO</span>
+                <span data-i18n="lang_yo">Yoruba</span>
+            </div>
+            <div class="lang-option" onclick="changeLanguage('ig')">
+                <span class="lang-flag ig">IG</span>
+                <span data-i18n="lang_ig">Igbo</span>
+            </div>
+        </div>
+    </div>
+
+   <div class="pro-loader" id="proLoader">
+    <!-- Background Image with Overlay -->
+    <div class="pro-loader-bg">
+        <div class="bg-image" style="background-image: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1920&q=80');"></div>
+        <div class="bg-overlay"></div>
+    </div>
+    
+    <!-- Content -->
+    <div class="pro-loader-content">
+        <!-- Logo Mark -->
+        <div class="pro-logo">
+            <div class="logo-mark">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <div class="logo-rings">
+                <div class="ring ring-1"></div>
+                <div class="ring ring-2"></div>
+            </div>
+        </div>
+        
+        <!-- Brand -->
+        <div class="pro-brand">
+            <h1 class="brand-name">AGROSPHERE</h1>
+            <p class="brand-tagline">AI-Powered Agricultural Intelligence</p>
+        </div>
+        
+        <!-- Progress Indicator -->
+        <div class="pro-progress">
+            <div class="progress-line">
+                <div class="progress-bar" id="proProgressBar"></div>
+            </div>
+            <div class="progress-info">
+                <span class="progress-text" id="proProgressText">Initializing</span>
+                <span class="progress-percent" id="proProgressPercent">0%</span>
+            </div>
+        </div>
+        
+        <!-- Loading Status -->
+        <div class="status-messages" id="statusMessages">
+            <span class="status-item active">Connecting to farm database</span>
+        </div>
+    </div>
+    
+    <!-- Corner Elements -->
+    <div class="corner-element top-left">
+        <i class="fas fa-seedling"></i>
+    </div>
+    <div class="corner-element top-right">
+        <i class="fas fa-cloud-sun"></i>
+    </div>
+    <div class="corner-element bottom-left">
+        <i class="fas fa-tractor"></i>
+    </div>
+    <div class="corner-element bottom-right">
+        <i class="fas fa-chart-line"></i>
+    </div>
+</div>
+    <!-- APP -->
+    <div class="app" id="app">
+        <!-- MOBILE HEADER -->
+        <header class="mobile-header">
+            <div class="mobile-brand">
+                <div class="mobile-brand-icon"><i class="fas fa-leaf"></i></div>
+                <div class="mobile-brand-text">
+                    <h1>Agrosphere</h1>
+                    <span data-i18n="ai_powered">AI Powered</span>
+                </div>
+            </div>
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars" id="menuIcon"></i>
+            </button>
+        </header>
+
+        <!-- SIDEBAR OVERLAY -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="brand-icon"><i class="fas fa-leaf"></i></div>
+                <div class="brand-text">
+                    <h1>Agrosphere</h1>
+                    <span data-i18n="ai_powered">AI Powered</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a class="nav-link active" onclick="showSection('dashboard')"><i class="fas fa-th-large"></i> <span data-i18n="dashboard">Dashboard</span></a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('records')"><i class="fas fa-clipboard-list"></i> <span data-i18n="weekly_records">Weekly Records</span> <span class="nav-badge" id="recordsBadge">0</span></a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('crops')"><i class="fas fa-seedling"></i> <span data-i18n="crop_health">Crop Health</span></a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('livestock')"><i class="fas fa-cow"></i> <span data-i18n="livestock">Livestock</span></a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('fertilizer')"><i class="fas fa-flask"></i> <span data-i18n="fertilizer">Fertilizer</span></a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('finance')"><i class="fas fa-chart-line"></i> <span data-i18n="profit_loss">Profit & Loss</span></a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('reports')"><i class="fas fa-file-alt"></i> <span data-i18n="reports">Reports</span></a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('settings')"><i class="fas fa-cog"></i> <span data-i18n="settings">Settings</span></a></li>
+            </ul>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1 id="pageTitle" data-i18n="dashboard">Dashboard</h1>
+                    <p id="pageSubtitle" data-i18n="ai_farm_mgmt">AI-powered farm management system</p>
+                </div>
+                <div class="top-actions">
+                    <button class="btn btn-glass" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> <span data-i18n="export_excel">Export Excel</span></button>
+                    <button class="btn btn-primary" onclick="openRecordModal()"><i class="fas fa-plus"></i> <span data-i18n="new_record">New Record</span></button>
+                </div>
+            </div>
+
+            <!-- DASHBOARD -->
+            <section id="dashboardSection" class="section-content">
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon green"><i class="fas fa-clipboard-check"></i></div>
+                            <span class="stat-trend up"><i class="fas fa-arrow-up"></i> <span data-i18n="active">Active</span></span>
+                        </div>
+                        <div class="stat-value" id="totalRecords">0</div>
+                        <div class="stat-label" data-i18n="weekly_records">Weekly Records</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon blue"><i class="fas fa-money-bill-wave"></i></div>
+                            <span class="stat-trend up" data-i18n="total">Total</span>
+                        </div>
+                        <div class="stat-value" id="totalProfit">₦0</div>
+                        <div class="stat-label" data-i18n="net_profit">Net Profit</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon orange"><i class="fas fa-seedling"></i></div>
+                            <span class="stat-trend down" id="sickCropsBadge" style="display:none"><i class="fas fa-exclamation"></i> <span id="sickCropsNum">0</span></span>
+                        </div>
+                        <div class="stat-value" id="sickCropsCount">0</div>
+                        <div class="stat-label" data-i18n="sick_crops">Sick Crops</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon red"><i class="fas fa-heartbeat"></i></div>
+                            <span class="stat-trend down" id="sickAnimalsBadge" style="display:none"><i class="fas fa-exclamation"></i> <span id="sickAnimalsNum">0</span></span>
+                        </div>
+                        <div class="stat-value" id="sickAnimalsCount">0</div>
+                        <div class="stat-label" data-i18n="sick_animals">Sick Animals</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="glass-card">
+                        <h3 class="section-title"><i class="fas fa-robot"></i> <span data-i18n="ai_recommendations">AI Recommendations</span></h3>
+                        <div id="aiRecommendations"></div>
+                    </div>
+                    <div class="glass-card">
+                        <h3 class="section-title"><i class="fas fa-chart-pie"></i> <span data-i18n="farm_overview">Farm Overview</span></h3>
+                        <div class="chart-container"><canvas id="overviewChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RECORDS -->
+            <section id="recordsSection" class="section-content hidden">
+                <div class="glass-card">
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('all')" data-i18n="all_records">All Records</button>
+                        <button class="tab" onclick="switchTab('sick')" data-i18n="sick_diseased">Sick/Diseased</button>
+                        <button class="tab" onclick="switchTab('fertilizer')" data-i18n="fertilizer_log">Fertilizer Log</button>
+                    </div>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="recordSearch" placeholder="Search records..." onkeyup="searchRecords()" data-i18n-placeholder="search_records">
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="week">Week</th>
+                                    <th data-i18n="date">Date</th>
+                                    <th data-i18n="type">Type</th>
+                                    <th data-i18n="name">Name</th>
+                                    <th data-i18n="health">Health</th>
+                                    <th data-i18n="fertilizer">Fertilizer</th>
+                                    <th data-i18n="profit_loss">Profit/Loss</th>
+                                    <th data-i18n="actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="recordsEmpty" class="empty-state hidden">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3 data-i18n="no_records">No Records Yet</h3>
+                        <p data-i18n="start_tracking">Start tracking your farm activities</p>
+                        <button class="btn btn-primary mt-20" onclick="openRecordModal()"><i class="fas fa-plus"></i> <span data-i18n="add_record">Add Record</span></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CROPS -->
+            <section id="cropsSection" class="section-content hidden">
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fas fa-seedling"></i> <span data-i18n="crop_health_monitor">Crop Health Monitor</span></h3>
+                    <div id="cropsList"></div>
+                </div>
+            </section>
+
+            <!-- LIVESTOCK -->
+            <section id="livestockSection" class="section-content hidden">
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fas fa-cow"></i> <span data-i18n="livestock_mgmt">Livestock Management</span></h3>
+                    <div id="livestockList"></div>
+                </div>
+            </section>
+
+            <!-- FERTILIZER -->
+            <section id="fertilizerSection" class="section-content hidden">
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fas fa-flask"></i> <span data-i18n="fertilizer_tracker">Fertilizer Application Tracker</span></h3>
+                    <div id="fertilizerList"></div>
+                </div>
+            </section>
+
+            <!-- FINANCE -->
+            <section id="financeSection" class="section-content hidden">
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fas fa-chart-line"></i> <span data-i18n="profit_loss_analysis">Profit & Loss Analysis</span></h3>
+                    <div class="chart-container mb-20"><canvas id="financeChart"></canvas></div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="period">Period</th>
+                                    <th data-i18n="revenue">Revenue</th>
+                                    <th data-i18n="expenses">Expenses</th>
+                                    <th data-i18n="profit_loss">Profit/Loss</th>
+                                    <th data-i18n="status">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financeTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REPORTS -->
+            <section id="reportsSection" class="section-content hidden">
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fas fa-file-alt"></i> <span data-i18n="generate_reports">Generate Reports</span></h3>
+                    <div class="form-row mb-20">
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="report_type">Report Type</label>
+                            <select class="form-select" id="reportType">
+                                <option value="weekly" data-i18n="weekly_summary">Weekly Summary</option>
+                                <option value="monthly" data-i18n="monthly_analysis">Monthly Analysis</option>
+                                <option value="crop" data-i18n="crop_health_report">Crop Health Report</option>
+                                <option value="financial" data-i18n="financial_statement">Financial Statement</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="date_range">Date Range</label>
+                            <select class="form-select" id="reportRange">
+                                <option value="all" data-i18n="all_time">All Time</option>
+                                <option value="month" data-i18n="last_30_days">Last 30 Days</option>
+                                <option value="quarter" data-i18n="last_3_months">Last 3 Months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateReport()"><i class="fas fa-file-export"></i> <span data-i18n="generate_export">Generate & Export</span></button>
+                </div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section id="settingsSection" class="section-content hidden">
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fas fa-cog"></i> <span data-i18n="settings">Settings</span></h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="voice_ai_language">Voice AI Language (Nigerian Languages)</label>
+                        <select class="form-select" id="voiceLanguage">
+                            <option value="en" data-i18n="english">English</option>
+                            <option value="yo" data-i18n="yoruba">Yoruba (API Ready)</option>
+                            <option value="ig" data-i18n="igbo">Igbo (API Ready)</option>
+                            <option value="ha" data-i18n="hausa">Hausa (API Ready)</option>
+                        </select>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;" data-i18n="voice_ai_note">Connect your Voice AI API key to enable voice in these languages</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="data_management">Data Management</label>
+                        <div class="form-row">
+                            <button class="btn btn-glass" onclick="backupData()"><i class="fas fa-download"></i> <span data-i18n="backup">Backup</span></button>
+                            <button class="btn btn-glass" onclick="document.getElementById('restoreFile').click()"><i class="fas fa-upload"></i> <span data-i18n="restore">Restore</span></button>
+                            <input type="file" id="restoreFile" accept=".json" hidden onchange="restoreData(event)">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="danger_zone">Danger Zone</label>
+                        <button class="btn btn-danger" onclick="clearAllData()"><i class="fas fa-trash"></i> <span data-i18n="clear_all_data">Clear All Data</span></button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- AI WIDGET -->
+        <div class="ai-widget">
+            <div class="ai-panel" id="aiPanel">
+                <div class="ai-header">
+                    <div class="ai-avatar"><i class="fas fa-robot"></i></div>
+                    <div>
+                        <h3>Agro AI</h3>
+                        <div class="ai-status"><span data-i18n="online">Online</span></div>
+                    </div>
+                </div>
+                <div class="ai-messages" id="aiMessages">
+                    <div class="message ai">
+                        <div class="avatar"><i class="fas fa-robot"></i></div>
+                        <div class="message-content" data-i18n="ai_welcome">
+                            Hello! I'm your AI farming assistant. I can help with:<br><br>
+                            • Crop disease diagnosis<br>
+                            • Fertilizer recommendations<br>
+                            • Profit optimization<br>
+                            • Livestock health advice<br><br>
+                            How can I help you today?
+                        </div>
+                    </div>
+                </div>
+                <div class="ai-input-area">
+                    <input type="text" class="ai-input" id="aiInput" data-i18n-placeholder="type_question" placeholder="Type your question..." onkeypress="if(event.key==='Enter')sendAIMessage()">
+                    <button class="ai-voice" id="voiceBtn" onclick="toggleVoiceInput()" title="Voice Input"><i class="fas fa-microphone"></i></button>
+                    <button class="ai-send" onclick="sendAIMessage()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+            <button class="ai-button" id="aiButton" onclick="toggleAI()"><i class="fas fa-robot"></i></button>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="recordModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="add_farm_record">Add Farm Record</h3>
+                <button class="modal-close" onclick="closeRecordModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="recordForm">
+                    <div class="form-grid-3">
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="week_number">Week Number</label>
+                            <input type="number" class="form-input" id="recWeek" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="date">Date</label>
+                            <input type="date" class="form-input" id="recDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="record_type">Record Type</label>
+                            <select class="form-select" id="recType" onchange="updateFormFields()">
+                                <option value="crop" data-i18n="crop">Crop</option>
+                                <option value="livestock" data-i18n="livestock">Livestock</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" id="nameLabel" data-i18n="crop_name">Crop Name</label>
+                            <input type="text" class="form-input" id="recName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="variety_breed">Variety/Breed</label>
+                            <input type="text" class="form-input" id="recVariety">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="health_status">Health Status</label>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="health" value="excellent" checked><span data-i18n="excellent">Excellent</span></label>
+                            <label class="radio-label"><input type="radio" name="health" value="good"><span data-i18n="good">Good</span></label>
+                            <label class="radio-label"><input type="radio" name="health" value="average"><span data-i18n="average">Average</span></label>
+                            <label class="radio-label"><input type="radio" name="health" value="sick"><span data-i18n="sick">Sick/Diseased</span></label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="disease_description">Disease/Issue Description</label>
+                        <input type="text" class="form-input" id="recDisease" data-i18n-placeholder="describe_symptoms" placeholder="Describe symptoms or disease observed">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="fertilizer_applied">Fertilizer/Treatment Applied</label>
+                        <input type="text" class="form-input" id="recFertilizer" data-i18n-placeholder="type_quantity" placeholder="Type and quantity">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="revenue_naira">Revenue (₦)</label>
+                            <input type="number" class="form-input" id="recRevenue" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="expenses_naira">Expenses (₦)</label>
+                            <input type="number" class="form-input" id="recExpenses" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="notes">Notes</label>
+                        <textarea class="form-textarea" id="recNotes" data-i18n-placeholder="additional_observations" placeholder="Additional observations..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-glass" onclick="closeRecordModal()" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="saveRecord()"><i class="fas fa-save"></i> <span data-i18n="save_record">Save Record</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+
+
+        // ==================== TRANSLATIONS ====================
+        const translations = {
+            en: {
+                ai_powered: "AI Powered",
+                dashboard: "Dashboard",
+                weekly_records: "Weekly Records",
+                crop_health: "Crop Health",
+                livestock: "Livestock",
+                fertilizer: "Fertilizer",
+                profit_loss: "Profit & Loss",
+                reports: "Reports",
+                settings: "Settings",
+                ai_farm_mgmt: "AI-powered farm management system",
+                export_excel: "Export Excel",
+                new_record: "New Record",
+                active: "Active",
+                total: "Total",
+                net_profit: "Net Profit",
+                sick_crops: "Sick Crops",
+                sick_animals: "Sick Animals",
+                ai_recommendations: "AI Recommendations",
+                farm_overview: "Farm Overview",
+                all_records: "All Records",
+                sick_diseased: "Sick/Diseased",
+                fertilizer_log: "Fertilizer Log",
+                search_records: "Search records...",
+                week: "Week",
+                date: "Date",
+                type: "Type",
+                name: "Name",
+                health: "Health",
+                actions: "Actions",
+                no_records: "No Records Yet",
+                start_tracking: "Start tracking your farm activities",
+                add_record: "Add Record",
+                crop_health_monitor: "Crop Health Monitor",
+                livestock_mgmt: "Livestock Management",
+                fertilizer_tracker: "Fertilizer Application Tracker",
+                profit_loss_analysis: "Profit & Loss Analysis",
+                period: "Period",
+                revenue: "Revenue",
+                expenses: "Expenses",
+                status: "Status",
+                generate_reports: "Generate Reports",
+                report_type: "Report Type",
+                weekly_summary: "Weekly Summary",
+                monthly_analysis: "Monthly Analysis",
+                crop_health_report: "Crop Health Report",
+                financial_statement: "Financial Statement",
+                date_range: "Date Range",
+                all_time: "All Time",
+                last_30_days: "Last 30 Days",
+                last_3_months: "Last 3 Months",
+                generate_export: "Generate & Export",
+                voice_ai_language: "Voice AI Language (Nigerian Languages)",
+                english: "English",
+                yoruba: "Yoruba (API Ready)",
+                igbo: "Igbo (API Ready)",
+                hausa: "Hausa (API Ready)",
+                voice_ai_note: "Connect your Voice AI API key to enable voice in these languages",
+                data_management: "Data Management",
+                backup: "Backup",
+                restore: "Restore",
+                danger_zone: "Danger Zone",
+                clear_all_data: "Clear All Data",
+                online: "Online",
+                ai_welcome: "Hello! I'm your AI farming assistant. I can help with:<br><br>• Crop disease diagnosis<br>• Fertilizer recommendations<br>• Profit optimization<br>• Livestock health advice<br><br>How can I help you today?",
+                type_question: "Type your question...",
+                add_farm_record: "Add Farm Record",
+                week_number: "Week Number",
+                record_type: "Record Type",
+                crop: "Crop",
+                crop_name: "Crop Name",
+                variety_breed: "Variety/Breed",
+                health_status: "Health Status",
+                excellent: "Excellent",
+                good: "Good",
+                average: "Average",
+                sick: "Sick/Diseased",
+                disease_description: "Disease/Issue Description",
+                describe_symptoms: "Describe symptoms or disease observed",
+                fertilizer_applied: "Fertilizer/Treatment Applied",
+                type_quantity: "Type and quantity",
+                revenue_naira: "Revenue (₦)",
+                expenses_naira: "Expenses (₦)",
+                notes: "Notes",
+                additional_observations: "Additional observations...",
+                cancel: "Cancel",
+                save_record: "Save Record",
+                lang_en: "English",
+                lang_ha: "Hausa",
+                lang_yo: "Yoruba",
+                lang_ig: "Igbo"
+            },
+            ha: {
+                ai_powered: "AI Mai Ƙarfi",
+                dashboard: "Dashboard",
+                weekly_records: "Rahisanci na Makonni",
+                crop_health: "Lafiyar Tsirin",
+                livestock: "Dabbobi",
+                fertilizer: "Manure",
+                profit_loss: "Ribɗi da Asarar",
+                reports: "Rahotanni",
+                settings: "Saituna",
+                ai_farm_mgmt: "Tsarin Gudanar da Gona mai Amfani da AI",
+                export_excel: "Fitar Excel",
+                new_record: "Sabon Bayani",
+                active: "Mai Aiki",
+                total: "Jimla",
+                net_profit: "Ribɗi",
+                sick_crops: "Tsirin da ba lafiya",
+                sick_animals: "Dabbobin da ba lafiya",
+                ai_recommendations: "Shawarwar AI",
+                farm_overview: "Bayani Game da Gona",
+                all_records: "Duk Bayanai",
+                sick_diseased: "Marasa Lafiya",
+                fertilizer_log: "Tarihin Manure",
+                search_records: "Bincika bayanai...",
+                week: "Mako",
+                date: "Kwanan Wata",
+                type: "Nau'in",
+                name: "Suna",
+                health: "Lafiya",
+                actions: "Ayyuka",
+                no_records: "Babu Bayani Tukuna",
+                start_tracking: "Fara bin diddigin ayyukan gonarka",
+                add_record: "Ƙara Bayani",
+                crop_health_monitor: "Bin diddigin Lafiyar Tsirin",
+                livestock_mgmt: "Gudanar da Dabbobi",
+                fertilizer_tracker: "Bin diddigin Manure",
+                profit_loss_analysis: "Binciken Ribɗi da Asarar",
+                period: "Lokaci",
+                revenue: "Kudin Shiga",
+                expenses: "Kudin Fitowa",
+                status: "Matsayi",
+                generate_reports: "Ƙirar Rahotanni",
+                report_type: "Nau'in Rahoto",
+                weekly_summary: "Takaitaccen Makonni",
+                monthly_analysis: "Binciken Wata-wata",
+                crop_health_report: "Rahoton Lafiyar Tsirin",
+                financial_statement: "Rahoton Kuɗi",
+                date_range: "Zangon Lokaci",
+                all_time: "Duk Lokaci",
+                last_30_days: "Kwanaki 30 na ƙarshe",
+                last_3_months: "Watanni 3 na ƙarshe",
+                generate_export: "Ƙira & Fitar",
+                voice_ai_language: "Harshen AI na Murya (Harsunan Najeriya)",
+                english: "Turanci",
+                yoruba: "Yarbawa (API Ready)",
+                igbo: "Igbo (API Ready)",
+                hausa: "Hausa (API Ready)",
+                voice_ai_note: "Haɗa API key ɗin AI na muryarka don kunna murya a cikin waɗannan harsuna",
+                data_management: "Gudanar da Bayanai",
+                backup: "Ajiye",
+                restore: "Dawo da",
+                danger_zone: "Yankin Hadari",
+                clear_all_data: "Share Duk Bayanai",
+                online: "Kan Layi",
+                ai_welcome: "Sannu! Ni ne mai taimakon noma na AI. Ina iya taimaka da:<br><br>• Gano cutar tsirin<br>• Shawarwar manure<br>• Inganta ribɗi<br>• Lafiyar dabbobi<br><br>Yaya zan iya taimaka maka yau?",
+                type_question: "Rubuta tambayarka...",
+                add_farm_record: "Ƙara Bayanin Gona",
+                week_number: "Lambar Makonni",
+                record_type: "Nau'in Bayani",
+                crop: "Tsirin",
+                crop_name: "Sunan Tsirin",
+                variety_breed: "Nau'i/Rabin",
+                health_status: "Matsayin Lafiya",
+                excellent: "Madalla",
+                good: "Kyau",
+                average: "Matsakaici",
+                sick: "Marasa Lafiya",
+                disease_description: "Bayanin Cutar/Matsala",
+                describe_symptoms: "Siffanta alamun cuta ko cutar da aka gani",
+                fertilizer_applied: "Manure/Kiwon da aka Yi Amfani",
+                type_quantity: "Nau'i da yawan",
+                revenue_naira: "Kudin Shiga (₦)",
+                expenses_naira: "Kudin Fitowa (₦)",
+                notes: "Bayanai Ƙarin",
+                additional_observations: "Ƙarin kallo...",
+                cancel: "Soke",
+                save_record: "Ajiye Bayani",
+                lang_en: "Turanci",
+                lang_ha: "Hausa",
+                lang_yo: "Yarbawa",
+                lang_ig: "Igbo"
+            },
+            yo: {
+                ai_powered: "AI Agbara",
+                dashboard: "Dasibodu",
+                weekly_records: "Akọsilẹ ọsẹ-ọsẹ",
+                crop_health: "Ilera Eweko",
+                livestock: "Ohun ọ̀sìn",
+                fertilizer: "Mànúà",
+                profit_loss: "Èrè àti Òfo",
+                reports: "Ìròyìn",
+                settings: "Ètò",
+                ai_farm_mgmt: "Òṣèlú iṣàgbon fún iṣẹ́ àgbẹ̀ pẹ̀lú AI",
+                export_excel: "Gbé Excel jáde",
+                new_record: "Àkọsílẹ̀ Tuntun",
+                active: "Nṣiṣẹ́",
+                total: "Lápapọ̀",
+                net_profit: "Èrè Gbogbo",
+                sick_crops: "Eweko Ailera",
+                sick_animals: "Ohun ọ̀sìn Ailera",
+                ai_recommendations: "Ìmọràn AI",
+                farm_overview: "Àyẹ̀wò Ilé-ìsàgbon",
+                all_records: "Gbogbo Àkọsílẹ̀",
+                sick_diseased: "Àìlera/Àìsàn",
+                fertilizer_log: "Títòjọ Mànúà",
+                search_records: "Wa àkọsílẹ̀...",
+                week: "Ọsẹ",
+                date: "Ọjọ́",
+                type: "Oríṣiríṣi",
+                name: "Orúkọ",
+                health: "Ilera",
+                actions: "Iṣẹ́",
+                no_records: "Kò sí Àkọsílẹ̀ Tí ó Tọ́",
+                start_tracking: "Bẹ̀rí ṣíṣe àmì ìgbésẹ̀ àgbẹ̀ rẹ",
+                add_record: "Fi Àkọsílẹ̀ kún",
+                crop_health_monitor: "Olùtọ́jọ Ilera Eweko",
+                livestock_mgmt: "Ìsàkóso Ohun ọ̀sìn",
+                fertilizer_tracker: "Olùtọ́jọ Mànúà",
+                profit_loss_analysis: "Ìwá Òfo àti Èrè",
+                period: "Àsìkò",
+                revenue: "Owó Wọlé",
+                expenses: "Inawó",
+                status: "Ipo",
+                generate_reports: "Ìṣẹ̀dá Ìròyìn",
+                report_type: "Oríṣiríṣi Ìròyìn",
+                weekly_summary: "Àkópọ̀ ọsẹ-ọsẹ",
+                monthly_analysis: "Àyẹ̀wò oṣù-ọsọ",
+                crop_health_report: "Ìròyìn Ilera Eweko",
+                financial_statement: "Ìròyìn Owó",
+                date_range: "Àsìkò Ọjọ́",
+                all_time: "Gbogbo Àsìkò",
+                last_30_days: "Ọjọ́ 30 Tí ó Kọjá",
+                last_3_months: "Oṣù 3 Tí ó Kọjá",
+                generate_export: "Ṣèdá & Gbé Jáde",
+                voice_ai_language: "Èdè AI Ohùn (Àwọn Èdè Nàìjíríà)",
+                english: "Gẹ̀ẹ́sì",
+                yoruba: "Yorùbá (API Ready)",
+                igbo: "Igbo (API Ready)",
+                hausa: "Hausa (API Ready)",
+                voice_ai_note: "So àkójọpọ̀ kóòdì API AI ohùn rẹ pọ̀ láti ṣàgbàkalẹ̀ ohùn nínú àwọn èdè wọ̀nyí",
+                data_management: "Ìsàkóso Dátà",
+                backup: "Àbáyọ̀",
+                restore: "Ìdápadà",
+                danger_zone: "Agbègbè Òwu",
+                clear_all_data: "Pa Gbogbo Dátà Rẹ́",
+                online: "Lórí ayélujára",
+                ai_welcome: "Ẹ kú àárọ̀! Èmi ni olùrànlọ́wọ́ àgbẹ̀ AI rẹ. Mo lè ràn ọ́ lọ́wọ́ pẹ̀lú:<br><br>• Ìdíje àìsàn eweko<br>• Ìmọ̀ràn mànúà<br>• Ìmú èrè dàgbà<br>• Ìmọ̀ràn ilera ohun ọ̀sìn<br><br>Báwo ni mo ṣe lè ràn ọ́ lọ́wọ́ lónìí?",
+                type_question: "Tẹ́ ìbéèrè rẹ...",
+                add_farm_record: "Fi Àkọsílẹ̀ Ilé-ìsàgbon kún",
+                week_number: "Nọ́mbà ọsẹ",
+                record_type: "Oríṣiríṣi Àkọsílẹ̀",
+                crop: "Eweko",
+                crop_name: "Orúkọ Eweko",
+                variety_breed: "Oríṣiríṣi/Ìran",
+                health_status: "Ipo Ilera",
+                excellent: "Gidi gan-an",
+                good: "Rere",
+                average: "Àárẹ̀",
+                sick: "Àìlera/Àìsàn",
+                disease_description: "Àlàyé Àìsàn/Òòrùn",
+                describe_symptoms: "Àpínlà àwọn àmì àìsàn tàbí àìsàn tí a rí",
+                fertilizer_applied: "Mànúà/Ìtọ́jú Tí a Lò",
+                type_quantity: "Oríṣiríṣi àti iye",
+                revenue_naira: "Owó Wọlé (₦)",
+                expenses_naira: "Inawó (₦)",
+                notes: "Àkíyèsí",
+                additional_observations: "Àwọn àkíyèsí kíkún...",
+                cancel: "Fagilé",
+                save_record: "Fi Àkọsílẹ̀ Pamọ́",
+                lang_en: "Gẹ̀ẹ́sì",
+                lang_ha: "Hausa",
+                lang_yo: "Yorùbá",
+                lang_ig: "Igbo"
+            },
+            ig: {
+                ai_powered: "AI Ike",
+                dashboard: "Dashboard",
+                weekly_records: "Dekọ kwa izu",
+                crop_health: "Ahụike ọkụkọ",
+                livestock: "Anụ ụlọ",
+                fertilizer: "Manọọ",
+                profit_loss: "Urụ na Ihe ọma",
+                reports: "Akụkọ",
+                settings: "Ntọala",
+                ai_farm_mgmt: "Usoro nchịkwa ugbo na-akwado site na AI",
+                export_excel: "Mbupu Excel",
+                new_record: "Dekọ ọhụrụ",
+                active: "Na-arụ ọrụ",
+                total: "Mkpokọta",
+                net_profit: "Urụ Net",
+                sick_crops: "Ọkụkọ ọrịa",
+                sick_animals: "Anụ ụlọ ọrịa",
+                ai_recommendations: "Nduzi AI",
+                farm_overview: "Nchịkọwa Ugbo",
+                all_records: "Gịnị ni ndekọ niile",
+                sick_diseased: "Ọrịa/Ahụhụ",
+                fertilizer_log: "Ndeti Manọọ",
+                search_records: "Chọọ ndekọ...",
+                week: "Izu",
+                date: "Ụbọchị",
+                type: "Ụdị",
+                name: "Aha",
+                health: "Ahụike",
+                actions: "Omume",
+                no_records: "Enweghị Ndekọ Ma",
+                start_tracking: "Bido ịchọpụta ihe ị na-eme n'ugbo gị",
+                add_record: "Tinye Ndekọ",
+                crop_health_monitor: "Nlele Ahụike Ọkụkọ",
+                livestock_mgmt: "Nchịkwa Anụ Ụlọ",
+                fertilizer_tracker: "Ndeti Manọọ",
+                profit_loss_analysis: "Nchọpụta Urụ na Ihe ọma",
+                period: "Oge",
+                revenue: "Ego abata",
+                expenses: "Ego a na-efu",
+                status: "Ọnọdụ",
+                generate_reports: "Kpụta Akụkọ",
+                report_type: "Ụdị Akụkọ",
+                weekly_summary: "Nchịkọwa kwa izu",
+                monthly_analysis: "Nchọpụta ọnwa",
+                crop_health_report: "Akụkọ Ahụike Ọkụkọ",
+                financial_statement: "Akụkọ Ego",
+                date_range: "Oge Ụbọchị",
+                all_time: "Oge niile",
+                last_30_days: "Ụbọchị 30 gara aga",
+                last_3_months: "Ọnwa 3 gara aga",
+                generate_export: "Kpụta & Mbupu",
+                voice_ai_language: "Asụsụ AI Voice (Asụsụ Naijiria)",
+                english: "Bekee",
+                yoruba: "Yoruba (API Ready)",
+                igbo: "Igbo (API Ready)",
+                hausa: "Hausa (API Ready)",
+                voice_ai_note: "Jikọọ API key AI Voice gị iji mee ka olu na-arụ ọrụ n'asụsụ ndị a",
+                data_management: "Nchịkwa Data",
+                backup: "Chekwaa",
+                restore: "Weghachite",
+                danger_zone: "Gburugburu Ihe ize ndụ",
+                clear_all_data: "Hichapụ Data niile",
+                online: "N'ịntanetị",
+                ai_welcome: "Nnọọ! Abụ m onyinye aka gị na-agba ọkụkọ AI. Enwere m ike inyere gị aka na:<br><br>• Ịchọpụta ọrịa ọkụkọ<br>• Nduzi manọọ<br>• Ịmụ urụ<br>• Ndụzi ahụike anụ ụlọ<br><br>Kedu ka m nwere ike inyere gị aka taa?",
+                type_question: "Dee ajụjụ gị...",
+                add_farm_record: "Tinye Ndekọ Ugbo",
+                week_number: "Nọmba izu",
+                record_type: "Ụdị Ndekọ",
+                crop: "Ọkụkọ",
+                crop_name: "Aha Ọkụkọ",
+                variety_breed: "Ụdị/Mbụ",
+                health_status: "Ọnọdụ Ahụike",
+                excellent: "Ọma nke ọma",
+                good: "Ọma",
+                average: "Nke etiti",
+                sick: "Ọrịa/Ahụhụ",
+                disease_description: "Nkọwa Ọrịa",
+                describe_symptoms: "Kọwaa ihe ngosi ma ọ bụ ọrịa ahụ a hụrụ",
+                fertilizer_applied: "Manọọ/Ịrụzi a rụrụ",
+                type_quantity: "Ụdị na ọnụọgụgụ",
+                revenue_naira: "Ego abata (₦)",
+                expenses_naira: "Ego a na-efu (₦)",
+                notes: "Ihe ndetu",
+                additional_observations: "Ilele ndị ọzọ...",
+                cancel: "Kagbuo",
+                save_record: "Chekwaa Ndekọ",
+                lang_en: "Bekee",
+                lang_ha: "Hausa",
+                lang_yo: "Yoruba",
+                lang_ig: "Igbo"
+            }
+        };
+
+        // ==================== STATE ====================
+        let records = [], currentTab = 'all', recognition = null, isRecording = false;
+        let currentLang = localStorage.getItem('agro_lang') || 'en';
+        let currentTheme = localStorage.getItem('agro_theme') || 'dark';
+
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply saved theme
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            updateThemeIcon();
+            
+            // Apply saved language
+            changeLanguage(currentLang, false);
+            
+            simulateLoading();
+            loadData();
+            initVoiceRecognition();
+            document.getElementById('recDate').valueAsDate = new Date();
+            
+            // Close lang dropdown on outside click
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.lang-selector')) {
+                    document.getElementById('langDropdown').classList.remove('active');
+                }
+            });
+        });
+
+        // ==================== THEME ====================
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('agro_theme', currentTheme);
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeIcon');
+            icon.className = currentTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        // ==================== LANGUAGE ====================
+        function toggleLangDropdown() {
+            document.getElementById('langDropdown').classList.toggle('active');
+        }
+
+        function changeLanguage(lang, save = true) {
+            currentLang = lang;
+            if (save) localStorage.setItem('agro_lang', lang);
+            
+            // Update UI
+            document.getElementById('currentLang').textContent = lang.toUpperCase();
+            document.querySelectorAll('.lang-option').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('onclick').includes(`'${lang}'`));
+            });
+            document.getElementById('langDropdown').classList.remove('active');
+            
+            // Translate all elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+            
+            // Translate placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+            
+            // Update page titles
+            updatePageTitles();
+        }
+
+        function updatePageTitles() {
+            const t = translations[currentLang];
+            const titles = {
+                dashboard: [t.dashboard, t.ai_farm_mgmt],
+                records: [t.weekly_records, t.ai_farm_mgmt],
+                crops: [t.crop_health, t.ai_farm_mgmt],
+                livestock: [t.livestock, t.ai_farm_mgmt],
+                fertilizer: [t.fertilizer, t.ai_farm_mgmt],
+                finance: [t.profit_loss, t.ai_farm_mgmt],
+                reports: [t.reports, t.ai_farm_mgmt],
+                settings: [t.settings, t.ai_farm_mgmt]
+            };
+            
+            const currentSection = document.querySelector('.section-content:not(.hidden)')?.id.replace('Section', '') || 'dashboard';
+            if (titles[currentSection]) {
+                document.getElementById('pageTitle').textContent = titles[currentSection][0];
+                document.getElementById('pageSubtitle').textContent = titles[currentSection][1];
+            }
+        }
+
+        // ==================== LOADING ====================
+   // Professional Loading Animation
+    function initProLoader() {
+        const loadingStates = [
+            { percent: 0, text: 'Initializing' },
+            { percent: 12, text: 'Connecting to database' },
+            { percent: 25, text: 'Loading AI models' },
+            { percent: 38, text: 'Syncing farm data' },
+            { percent: 52, text: 'Analyzing soil metrics' },
+            { percent: 65, text: 'Calibrating sensors' },
+            { percent: 78, text: 'Optimizing algorithms' },
+            { percent: 90, text: 'Finalizing setup' },
+            { percent: 100, text: 'Welcome to Agrosphere' }
+        ];
+        
+        const statusMessages = [
+            'Connecting to farm database',
+            'Loading neural networks',
+            'Syncing weather data',
+            'Analyzing crop health',
+            'Optimizing for your region',
+            'Preparing dashboard'
+        ];
+        
+        let currentIndex = 0;
+        const progressBar = document.getElementById('proProgressBar');
+        const progressPercent = document.getElementById('proProgressPercent');
+        const progressText = document.getElementById('proProgressText');
+        const statusContainer = document.getElementById('statusMessages');
+        
+        // Animate progress
+        const progressInterval = setInterval(() => {
+            if (currentIndex >= loadingStates.length) {
+                clearInterval(progressInterval);
+                completeLoading();
+                return;
+            }
+            
+            const state = loadingStates[currentIndex];
+            progressBar.style.width = state.percent + '%';
+            progressPercent.textContent = state.percent + '%';
+            progressText.textContent = state.text;
+            
+            currentIndex++;
+        }, 320);
+        
+        // Rotate status messages
+        let messageIndex = 0;
+        setInterval(() => {
+            if (messageIndex < statusMessages.length) {
+                statusContainer.innerHTML = `<span class="status-item active">${statusMessages[messageIndex]}</span>`;
+                messageIndex++;
+            }
+        }, 1800);
+        
+        function completeLoading() {
+            setTimeout(() => {
+                const loader = document.getElementById('proLoader');
+                const app = document.getElementById('app');
+                
+                loader.classList.add('hidden');
+                
+                if (app) {
+                    app.style.opacity = '0';
+                    app.style.transform = 'translateY(15px)';
+                    app.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    
+                    setTimeout(() => {
+                        app.style.opacity = '1';
+                        app.style.transform = 'translateY(0)';
+                    }, 100);
+                }
+            }, 700);
+        }
+    }
+    
+    // Start on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initProLoader);
+    } else {
+        initProLoader();
+    }
+        // ==================== DATA & NAVIGATION ====================
+        function loadData() { 
+            records = JSON.parse(localStorage.getItem('agro_records') || '[]'); 
+            updateDashboard(); 
+            loadRecordsTable(); 
+        }
+        
+        function saveData() { 
+            localStorage.setItem('agro_records', JSON.stringify(records)); 
+            updateDashboard(); 
+            loadRecordsTable(); 
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+            const icon = document.getElementById('menuIcon');
+            icon.className = document.getElementById('sidebar').classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.add('hidden'));
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.target.closest('.nav-link').classList.add('active');
+            
+            const t = translations[currentLang];
+            const titles = {
+                dashboard: [t.dashboard, t.ai_farm_mgmt],
+                records: [t.weekly_records, t.ai_farm_mgmt],
+                crops: [t.crop_health, t.ai_farm_mgmt],
+                livestock: [t.livestock, t.ai_farm_mgmt],
+                fertilizer: [t.fertilizer, t.ai_farm_mgmt],
+                finance: [t.profit_loss, t.ai_farm_mgmt],
+                reports: [t.reports, t.ai_farm_mgmt],
+                settings: [t.settings, t.ai_farm_mgmt]
+            };
+            
+            document.getElementById('pageTitle').textContent = titles[section][0];
+            document.getElementById('pageSubtitle').textContent = titles[section][1];
+            
+            if(section === 'dashboard') updateDashboard();
+            if(section === 'finance') updateFinance();
+            if(section === 'crops') loadCropsList();
+            if(section === 'livestock') loadLivestockList();
+            if(section === 'fertilizer') loadFertilizerList();
+            
+            // Close mobile sidebar
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+            document.getElementById('menuIcon').className = 'fas fa-bars';
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            loadRecordsTable();
+        }
+
+        // ==================== DASHBOARD ====================
+        function updateDashboard() {
+            const t = translations[currentLang];
+            const total = records.length;
+            const sickCrops = records.filter(r => r.type === 'crop' && r.health === 'sick').length;
+            const sickAnimals = records.filter(r => r.type === 'livestock' && r.health === 'sick').length;
+            const totalProfit = records.reduce((sum, r) => sum + ((parseFloat(r.revenue)||0) - (parseFloat(r.expenses)||0)), 0);
+            
+            document.getElementById('totalRecords').textContent = total;
+            document.getElementById('sickCropsCount').textContent = sickCrops;
+            document.getElementById('sickAnimalsCount').textContent = sickAnimals;
+            document.getElementById('totalProfit').textContent = '₦' + totalProfit.toLocaleString();
+            document.getElementById('recordsBadge').textContent = total;
+            
+            document.getElementById('sickCropsBadge').style.display = sickCrops > 0 ? 'flex' : 'none';
+            document.getElementById('sickCropsNum').textContent = sickCrops;
+            document.getElementById('sickAnimalsBadge').style.display = sickAnimals > 0 ? 'flex' : 'none';
+            document.getElementById('sickAnimalsNum').textContent = sickAnimals;
+            
+            generateAIRecommendations();
+            updateOverviewChart();
+        }
+
+        function generateAIRecommendations() {
+            const t = translations[currentLang];
+            const container = document.getElementById('aiRecommendations');
+            const recs = [];
+            const sick = records.filter(r => r.health === 'sick');
+            const highExp = records.filter(r => (parseFloat(r.expenses)||0) > (parseFloat(r.revenue)||0));
+            const noFert = records.filter(r => !r.fertilizer || r.fertilizer.trim() === '');
+            
+            if(sick.length > 0) {
+                const crops = sick.filter(r => r.type === 'crop');
+                const animals = sick.filter(r => r.type === 'livestock');
+                if(crops.length > 0) recs.push({icon:'seedling', color:'danger', title:t.sick_crops || 'Sick Crops', msg:`${crops.length} crop(s) showing disease signs. Inspect immediately.`});
+                if(animals.length > 0) recs.push({icon:'heartbeat', color:'danger', title:t.sick_animals || 'Sick Animals', msg:`${animals.length} animal(s) are sick. Veterinary consultation advised.`});
+            }
+            if(highExp.length > 0) recs.push({icon:'chart-line', color:'warning', title:'High Expense Alert', msg:`${highExp.length} records show higher expenses than revenue.`});
+            if(noFert.length > 3) recs.push({icon:'flask', color:'info', title:'Fertilizer Reminder', msg:'Several records lack fertilizer data. Update for better yields.'});
+            
+            const totalProfit = records.reduce((sum, r) => sum + ((r.revenue||0)-(r.expenses||0)), 0);
+            if(totalProfit > 0) recs.push({icon:'trophy', color:'success', title:t.net_profit || 'Net Profit', msg:`Excellent! Your farm generated ₦${totalProfit.toLocaleString()} profit.`});
+            if(recs.length === 0) recs.push({icon:'check-circle', color:'success', title:'All Systems Good', msg:'Your farm is running smoothly. Keep maintaining records.'});
+            
+            container.innerHTML = recs.map(r => `
+                <div class="message ai" style="margin-bottom:12px;">
+                    <div class="avatar" style="background:var(--${r.color})"><i class="fas fa-${r.icon}"></i></div>
+                    <div class="message-content" style="border-left:4px solid var(--${r.color})">
+                        <strong style="color:var(--${r.color});display:block;margin-bottom:4px;">${r.title}</strong>${r.msg}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== CHARTS ====================
+        function updateOverviewChart() {
+            const ctx = document.getElementById('overviewChart');
+            if(!ctx) return;
+            const crops = records.filter(r => r.type === 'crop').length;
+            const livestock = records.filter(r => r.type === 'livestock').length;
+            const healthy = records.filter(r => r.health === 'excellent' || r.health === 'good').length;
+            const sick = records.filter(r => r.health === 'sick').length;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: { 
+                    labels: ['Crops','Livestock','Healthy','Needs Attention'], 
+                    datasets: [{ 
+                        data: [crops, livestock, healthy, sick], 
+                        backgroundColor: ['#10b981','#3b82f6','#34d399','#ef4444'], 
+                        borderWidth: 0 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                padding: 20, 
+                                usePointStyle: true,
+                                color: currentTheme === 'light' ? '#374151' : '#374151'
+                            } 
+                        } 
+                    } 
+                }
+            });
+        }
+
+        function updateFinance() {
+            const ctx = document.getElementById('financeChart');
+            if(!ctx) return;
+            const profits = records.map(r => (parseFloat(r.revenue)||0) - (parseFloat(r.expenses)||0));
+            const labels = records.map(r => `W${r.week}`);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: { 
+                    labels: labels.length > 0 ? labels : ['No Data'], 
+                    datasets: [{ 
+                        label: 'Profit/Loss', 
+                        data: profits.length > 0 ? profits : [0], 
+                        backgroundColor: profits.map(p => p >= 0 ? '#10b981' : '#ef4444'), 
+                        borderRadius: 8 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { 
+                                callback: v => '₦' + v.toLocaleString(),
+                                color: currentTheme === 'light' ? '#374151' : '#374151'
+                            },
+                            grid: { color: currentTheme === 'light' ? '#e5e7eb' : '#e5e7eb' }
+                        },
+                        x: {
+                            ticks: { color: currentTheme === 'light' ? '#374151' : '#374151' }
+                        }
+                    } 
+                }
+            });
+            
+            const weekly = {};
+            records.forEach(r => {
+                if(!weekly[r.week]) weekly[r.week] = { revenue: 0, expenses: 0 };
+                weekly[r.week].revenue += parseFloat(r.revenue) || 0;
+                weekly[r.week].expenses += parseFloat(r.expenses) || 0;
+            });
+            
+            const t = translations[currentLang];
+            document.getElementById('financeTableBody').innerHTML = Object.entries(weekly).map(([w, d]) => {
+                const profit = d.revenue - d.expenses;
+                return `<tr>
+                    <td>${t.week || 'Week'} ${w}</td>
+                    <td>₦${d.revenue.toLocaleString()}</td>
+                    <td>₦${d.expenses.toLocaleString()}</td>
+                    <td style="color:${profit>=0?'#10b981':'#ef4444'}">₦${profit.toLocaleString()}</td>
+                    <td><span class="badge badge-${profit>=0?'success':'danger'}">${profit>=0?(t.profit_loss?.split(' ')[0] || 'Profit'):(t.profit_loss?.split(' ')[2] || 'Loss')}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ==================== RECORDS TABLE ====================
+        function loadRecordsTable() {
+            let filtered = records;
+            if(currentTab === 'sick') filtered = records.filter(r => r.health === 'sick');
+            if(currentTab === 'fertilizer') filtered = records.filter(r => r.fertilizer && r.fertilizer.trim() !== '');
+            
+            const tbody = document.getElementById('recordsTableBody');
+            const empty = document.getElementById('recordsEmpty');
+            
+            if(filtered.length === 0) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+            
+            const t = translations[currentLang];
+            tbody.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(r => {
+                const profit = (parseFloat(r.revenue)||0) - (parseFloat(r.expenses)||0);
+                const healthBadges = {
+                    excellent: 'success',
+                    good: 'success',
+                    average: 'warning',
+                    sick: 'danger'
+                };
+                return `<tr>
+                    <td>${t.week || 'Week'} ${r.week}</td>
+                    <td>${new Date(r.date).toLocaleDateString()}</td>
+                    <td><span class="badge badge-${r.type==='crop'?'success':'info'}">${r.type}</span></td>
+                    <td>${r.name}</td>
+                    <td><span class="badge badge-${healthBadges[r.health] || 'warning'}">${r.health}</span></td>
+                    <td>${r.fertilizer || '-'}</td>
+                    <td style="color:${profit>=0?'#10b981':'#ef4444'}">₦${profit.toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editRecord('${r.id}')" style="padding:8px 12px;margin-right:8px;font-size:0.8rem;"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger" onclick="deleteRecord('${r.id}')" style="padding:8px 12px;font-size:0.8rem;"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function loadCropsList() {
+            const t = translations[currentLang];
+            const crops = records.filter(r => r.type === 'crop');
+            const container = document.getElementById('cropsList');
+            if(crops.length === 0) { 
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-seedling"></i><h3>${t.no_records || 'No Records'}</h3><p>${t.start_tracking || 'Start tracking'}</p></div>`; 
+                return; 
+            }
+            
+            container.innerHTML = crops.map(c => `
+                <div class="glass-card" style="margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div><h4>${c.name} ${c.variety ? `(${c.variety})` : ''}</h4><p style="color:var(--text-secondary);font-size:0.9rem;">${t.week || 'Week'} ${c.week} • ${new Date(c.date).toLocaleDateString()}</p></div>
+                        <span class="badge badge-${c.health==='sick'?'danger':c.health==='excellent'?'success':'warning'}">${c.health}</span>
+                    </div>
+                    ${c.disease ? `<p style="margin-top:12px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ${c.disease}</p>` : ''}
+                    ${c.fertilizer ? `<p style="margin-top:8px;color:#059669;"><i class="fas fa-flask"></i> ${c.fertilizer}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function loadLivestockList() {
+            const t = translations[currentLang];
+            const animals = records.filter(r => r.type === 'livestock');
+            const container = document.getElementById('livestockList');
+            if(animals.length === 0) { 
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-cow"></i><h3>${t.no_records || 'No Records'}</h3><p>${t.start_tracking || 'Start tracking'}</p></div>`; 
+                return; 
+            }
+            
+            container.innerHTML = animals.map(a => `
+                <div class="glass-card" style="margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div><h4>${a.name} ${a.variety ? `(${a.variety})` : ''}</h4><p style="color:var(--text-secondary);font-size:0.9rem;">${t.week || 'Week'} ${a.week} • ${new Date(a.date).toLocaleDateString()}</p></div>
+                        <span class="badge badge-${a.health==='sick'?'danger':a.health==='excellent'?'success':'warning'}">${a.health}</span>
+                    </div>
+                    ${a.disease ? `<p style="margin-top:12px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ${a.disease}</p>` : ''}
+                    ${a.fertilizer ? `<p style="margin-top:8px;color:#059669;"><i class="fas fa-syringe"></i> ${a.fertilizer}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function loadFertilizerList() {
+            const t = translations[currentLang];
+            const withFert = records.filter(r => r.fertilizer && r.fertilizer.trim() !== '');
+            const container = document.getElementById('fertilizerList');
+            if(withFert.length === 0) { 
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-flask"></i><h3>${t.no_records || 'No Records'}</h3><p>${t.start_tracking || 'Start tracking'}</p></div>`; 
+                return; 
+            }
+            
+            container.innerHTML = withFert.map(r => `
+                <div class="glass-card" style="margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div><h4>${r.fertilizer}</h4><p style="color:var(--text-secondary);font-size:0.9rem;">${t.applied_to || 'Applied to'} ${r.name} • ${t.week || 'Week'} ${r.week}</p></div>
+                        <span class="badge badge-success">${r.type}</span>
+                    </div>
+                    <p style="margin-top:8px;color:var(--text-secondary);font-size:0.9rem;"><i class="fas fa-calendar"></i> ${new Date(r.date).toLocaleDateString()}</p>
+                </div>
+            `).join('');
+        }
+
+        // ==================== MODAL ====================
+        let editingId = null;
+        function openRecordModal(id = null) {
+            editingId = id;
+            const modal = document.getElementById('recordModal');
+            const t = translations[currentLang];
+            
+            if(id) {
+                const r = records.find(x => x.id === id);
+                document.getElementById('recWeek').value = r.week;
+                document.getElementById('recDate').value = r.date;
+                document.getElementById('recType').value = r.type;
+                document.getElementById('recName').value = r.name;
+                document.getElementById('recVariety').value = r.variety || '';
+                document.querySelector(`input[name="health"][value="${r.health}"]`).checked = true;
+                document.getElementById('recDisease').value = r.disease || '';
+                document.getElementById('recFertilizer').value = r.fertilizer || '';
+                document.getElementById('recRevenue').value = r.revenue || 0;
+                document.getElementById('recExpenses').value = r.expenses || 0;
+                document.getElementById('recNotes').value = r.notes || '';
+                document.querySelector('.modal-title').textContent = t.edit_record || 'Edit Record';
+            } else {
+                document.getElementById('recordForm').reset();
+                document.getElementById('recDate').valueAsDate = new Date();
+                document.querySelector('.modal-title').textContent = t.add_farm_record || 'Add Farm Record';
+            }
+            updateFormFields();
+            modal.classList.add('active');
+        }
+
+        function closeRecordModal() { 
+            document.getElementById('recordModal').classList.remove('active'); 
+            editingId = null; 
+        }
+        
+        function updateFormFields() { 
+            const t = translations[currentLang];
+            document.getElementById('nameLabel').textContent = document.getElementById('recType').value === 'crop' ? (t.crop_name || 'Crop Name') : (t.animal_type || 'Animal Type'); 
+        }
+
+        function saveRecord() {
+            const t = translations[currentLang];
+            const r = {
+                id: editingId || Date.now().toString(),
+                week: document.getElementById('recWeek').value,
+                date: document.getElementById('recDate').value,
+                type: document.getElementById('recType').value,
+                name: document.getElementById('recName').value,
+                variety: document.getElementById('recVariety').value,
+                health: document.querySelector('input[name="health"]:checked').value,
+                disease: document.getElementById('recDisease').value,
+                fertilizer: document.getElementById('recFertilizer').value,
+                revenue: parseFloat(document.getElementById('recRevenue').value) || 0,
+                expenses: parseFloat(document.getElementById('recExpenses').value) || 0,
+                notes: document.getElementById('recNotes').value
+            };
+            
+            if(editingId) { 
+                const i = records.findIndex(x => x.id === editingId); 
+                records[i] = r; 
+                showToast(t.record_updated || 'Record updated!', 'success'); 
+            } else { 
+                records.push(r); 
+                showToast(t.record_added || 'Record added!', 'success'); 
+            }
+            
+            saveData();
+            closeRecordModal();
+        }
+
+        function editRecord(id) { openRecordModal(id); }
+        
+        function deleteRecord(id) { 
+            const t = translations[currentLang];
+            if(confirm(t.confirm_delete || 'Delete this record?')) { 
+                records = records.filter(r => r.id !== id); 
+                saveData(); 
+                showToast(t.record_deleted || 'Record deleted', 'success'); 
+            } 
+        }
+
+        function searchRecords() {
+            const q = document.getElementById('recordSearch').value.toLowerCase();
+            document.querySelectorAll('#recordsTableBody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+
+        // ==================== EXCEL EXPORT ====================
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+            const t = translations[currentLang];
+            
+            const recordsData = records.map(r => ({
+                [t.week || 'Week']: r.week,
+                [t.date || 'Date']: r.date,
+                [t.type || 'Type']: r.type,
+                [t.name || 'Name']: r.name,
+                [t.variety_breed || 'Variety/Breed']: r.variety,
+                [t.health || 'Health']: r.health,
+                [t.disease || 'Disease']: r.disease || 'None',
+                [t.fertilizer || 'Fertilizer']: r.fertilizer || 'None',
+                [t.revenue || 'Revenue']: r.revenue || 0,
+                [t.expenses || 'Expenses']: r.expenses || 0,
+                [t.profit_loss || 'Profit/Loss']: (r.revenue||0)-(r.expenses||0),
+                [t.notes || 'Notes']: r.notes || ''
+            }));
+            
+            const ws1 = XLSX.utils.json_to_sheet(recordsData);
+            XLSX.utils.book_append_sheet(wb, ws1, t.weekly_records || 'Weekly Records');
+            
+            const sickCrops = records.filter(r => r.type === 'crop' && r.health === 'sick');
+            if(sickCrops.length > 0) {
+                const ws2 = XLSX.utils.json_to_sheet(sickCrops.map(r => ({
+                    [t.crop || 'Crop']: r.name,
+                    [t.variety || 'Variety']: r.variety,
+                    [t.week || 'Week']: r.week,
+                    [t.date || 'Date']: r.date,
+                    [t.issue || 'Issue']: r.disease,
+                    [t.status || 'Status']: 'Requires Attention'
+                })));
+                XLSX.utils.book_append_sheet(wb, ws2, t.sick_crops || 'Sick Crops');
+            }
+            
+            const sickAnimals = records.filter(r => r.type === 'livestock' && r.health === 'sick');
+            if(sickAnimals.length > 0) {
+                const ws3 = XLSX.utils.json_to_sheet(sickAnimals.map(r => ({
+                    [t.animal || 'Animal']: r.name,
+                    [t.breed || 'Breed']: r.variety,
+                    [t.week || 'Week']: r.week,
+                    [t.date || 'Date']: r.date,
+                    [t.issue || 'Issue']: r.disease,
+                    [t.status || 'Status']: 'Requires Attention'
+                })));
+                XLSX.utils.book_append_sheet(wb, ws3, t.sick_animals || 'Sick Animals');
+            }
+            
+            const fertRecords = records.filter(r => r.fertilizer && r.fertilizer.trim() !== '');
+            if(fertRecords.length > 0) {
+                const ws4 = XLSX.utils.json_to_sheet(fertRecords.map(r => ({
+                    [t.fertilizer || 'Fertilizer']: r.fertilizer,
+                    [t.applied_to || 'Applied To']: r.name,
+                    [t.type || 'Type']: r.type,
+                    [t.week || 'Week']: r.week,
+                    [t.date || 'Date']: r.date
+                })));
+                XLSX.utils.book_append_sheet(wb, ws4, t.fertilizer_log || 'Fertilizer Log');
+            }
+            
+            const weekly = {};
+            records.forEach(r => {
+                if(!weekly[r.week]) weekly[r.week] = { revenue: 0, expenses: 0 };
+                weekly[r.week].revenue += r.revenue || 0;
+                weekly[r.week].expenses += r.expenses || 0;
+            });
+            const ws5 = XLSX.utils.json_to_sheet(Object.entries(weekly).map(([w, d]) => ({
+                [t.week || 'Week']: w,
+                [t.revenue || 'Revenue']: d.revenue,
+                [t.expenses || 'Expenses']: d.expenses,
+                [t.profit_loss || 'Profit/Loss']: d.revenue - d.expenses
+            })));
+            XLSX.utils.book_append_sheet(wb, ws5, t.financial_summary || 'Financial Summary');
+            
+            XLSX.writeFile(wb, `Agrosphere_${currentLang.toUpperCase()}_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showToast(t.excel_exported || 'Excel file exported!', 'success');
+        }
+
+        function generateReport() {
+            const t = translations[currentLang];
+            const type = document.getElementById('reportType').value;
+            const range = document.getElementById('reportRange').value;
+            showToast(`${t.generating || 'Generating'} ${type} ${t.report || 'report'}...`, 'success');
+            setTimeout(exportToExcel, 1000);
+        }
+
+        // ==================== AI CHAT ====================
+        function toggleAI() {
+            const panel = document.getElementById('aiPanel');
+            panel.classList.toggle('active');
+        }
+
+        function sendAIMessage() {
+            const t = translations[currentLang];
+            const input = document.getElementById('aiInput');
+            const msg = input.value.trim();
+            if(!msg) return;
+            
+            const container = document.getElementById('aiMessages');
+            container.innerHTML += `<div class="message user"><div class="message-content">${msg}</div></div>`;
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+            
+            setTimeout(() => {
+                const response = generateAIResponse(msg);
+                container.innerHTML += `
+                    <div class="message ai">
+                        <div class="avatar"><i class="fas fa-robot"></i></div>
+                        <div class="message-content">${response}</div>
+                    </div>
+                `;
+                container.scrollTop = container.scrollHeight;
+                speakResponse(response);
+            }, 1000);
+        }
+
+        function generateAIResponse(msg) {
+            const t = translations[currentLang];
+            const lower = msg.toLowerCase();
+            const sickCrops = records.filter(r => r.type === 'crop' && r.health === 'sick');
+            const totalProfit = records.reduce((sum, r) => sum + ((r.revenue||0)-(r.expenses||0)), 0);
+            
+            if(lower.includes('sick') || lower.includes('disease') || lower.includes('ọrịa') || lower.includes('cuta') || lower.includes('àìsàn')) {
+                if(sickCrops.length > 0) return `${t.found || 'Found'} ${sickCrops.length} ${t.sick_crops || 'sick crop(s)'}. ${sickCrops.map(c => c.name + ' (' + c.disease + ')').join(', ')}. ${t.recommend_inspection || 'I recommend immediate inspection and possible fungicide application.'}`;
+                return t.no_sick_crops || 'Good news! No sick crops recorded. Maintain regular monitoring.';
+            }
+            if(lower.includes('profit') || lower.includes('money') || lower.includes('owo') || lower.includes('kudi') || lower.includes('ego')) {
+                return totalProfit > 0 ? `${t.your_farm_made || 'Your farm has made'} ₦${totalProfit.toLocaleString()} ${t.profit || 'profit'}. ${t.great_job || 'Great job!'}` : `${t.your_farm_at || 'Your farm is currently at'} ₦${Math.abs(totalProfit).toLocaleString()} ${t.loss || 'loss'}. ${t.review_expenses || 'Review expenses.'}`;
+            }
+            if(lower.includes('fertilizer') || lower.includes('manure') || lower.includes('manọọ')) {
+                const noFert = records.filter(r => !r.fertilizer);
+                if(noFert.length > 0) return `${noFert.length} ${t.records_lack_fertilizer || 'record(s) lack fertilizer data'}. ${t.for_maize || 'For maize, apply NPK 20:10:10. For vegetables, use organic manure.'}`;
+                return t.all_fertilizer_data || 'All records have fertilizer data. Keep maintaining proper nutrient management!';
+            }
+            if(lower.includes('hello') || lower.includes('hi') || lower.includes('sannu') || lower.includes('nnọọ')) return t.ai_welcome;
+            if(lower.includes('weather') || lower.includes('rain') || lower.includes('ruwan')) {
+                return t.weather_advice || 'I recommend checking local weather services. For now, ensure proper drainage and consider irrigation if dry season.';
+            }
+            if(lower.includes('market') || lower.includes('sell') || lower.includes('sayar')) {
+                return t.market_advice || 'To maximize profit, sell during off-peak seasons. Store crops properly if prices are low. Consider value-added processing.';
+            }
+            return t.ai_understand || 'I understand. Based on your records, I recommend maintaining detailed weekly logs for better farm management. Would you like specific advice on crops, livestock, or finances?';
+        }
+
+        // ==================== VOICE AI ====================
+        function initVoiceRecognition() {
+            if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                // Set language based on selection
+                const langMap = { 'en': 'en-US', 'yo': 'en-US', 'ig': 'en-US', 'ha': 'en-US' };
+                recognition.lang = langMap[currentLang] || 'en-US';
+                
+                recognition.onresult = (e) => {
+                    const transcript = e.results[0][0].transcript;
+                    document.getElementById('aiInput').value = transcript;
+                    sendAIMessage();
+                    stopRecording();
+                };
+                
+                recognition.onerror = () => { 
+                    stopRecording(); 
+                    showToast(translations[currentLang].voice_error || 'Voice recognition error', 'error'); 
+                };
+                recognition.onend = () => stopRecording();
+            }
+        }
+
+        function toggleVoiceInput() {
+            const t = translations[currentLang];
+            if(!recognition) { 
+                showToast(t.voice_not_supported || 'Voice AI not supported in this browser', 'error'); 
+                return; 
+            }
+            if(isRecording) { 
+                recognition.stop(); 
+                stopRecording(); 
+            } else { 
+                startRecording(); 
+                recognition.start(); 
+            }
+        }
+
+        function startRecording() {
+            isRecording = true;
+            document.getElementById('voiceBtn').classList.add('recording');
+            document.getElementById('aiInput').placeholder = translations[currentLang].listening || 'Listening... Speak now';
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            document.getElementById('voiceBtn').classList.remove('recording');
+            document.getElementById('aiInput').placeholder = translations[currentLang].type_question || 'Type your question...';
+        }
+
+        function speakResponse(text) {
+            if('speechSynthesis' in window) {
+                const cleanText = text.replace(/<[^>]*>/g, '');
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                
+                const langMap = { 'en': 'en-US', 'yo': 'en-US', 'ig': 'en-US', 'ha': 'en-US' };
+                utterance.lang = langMap[currentLang] || 'en-US';
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // ==================== SETTINGS ====================
+        function backupData() {
+            const t = translations[currentLang];
+            const data = { records, exportDate: new Date().toISOString(), version: '1.0.0', language: currentLang };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `agrosphere_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast(t.backup_downloaded || 'Backup downloaded!', 'success');
+        }
+
+        function restoreData(e) {
+            const t = translations[currentLang];
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if(data.records) { 
+                        records = data.records; 
+                        saveData(); 
+                        showToast(t.data_restored || 'Data restored!', 'success'); 
+                    }
+                } catch(err) { 
+                    showToast(t.invalid_backup || 'Invalid backup file', 'error'); 
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            const t = translations[currentLang];
+            if(confirm(t.warning_clear || 'WARNING: This will delete ALL data permanently!')) {
+                if(confirm(t.confirm_clear || 'Are you absolutely sure?')) {
+                    records = []; 
+                    localStorage.removeItem('agro_records');
+                    saveData(); 
+                    showToast(t.all_data_cleared || 'All data cleared', 'success');
+                }
+            }
+        }
+
+        // ==================== TOAST ====================
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle' };
+            toast.innerHTML = `<i class="fas fa-${icons[type]}"></i><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { 
+                toast.style.opacity = '0'; 
+                toast.style.transform = 'translateX(100%)'; 
+                setTimeout(() => toast.remove(), 300); 
+            }, 4000);
+        }
+
+        // Close modals on outside click
+        document.getElementById('recordModal').addEventListener('click', (e) => { 
+            if(e.target === e.currentTarget) closeRecordModal(); 
+        });
+    </script>
+</body>
+</html>

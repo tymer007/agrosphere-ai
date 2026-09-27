@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/assets/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/site.css">
+    <link rel="stylesheet" href="/assets/css/brand.css">
+    <link rel="stylesheet" href="/assets/css/site-extra.css">
+    <title>Create account · Agrosphere AI</title>
+    <script type="module" src="/js/pages/signup.js"></script>
+</head>
+<body>
+    <main class="auth-page">
+        <section class="auth-form-side">
+            <a href="/home" class="nav-brand"><agro-logo size="38"></agro-logo><span>Agrosphere</span></a>
+            <div class="auth-form-wrap">
+                <h1>Create your account</h1>
+                <p>Free forever plan. Set up your farm in about 3 minutes.</p>
+                <div class="form-error" id="formError"></div>
+                <form id="signupForm" novalidate>
+                    <div class="input-group">
+                        <label for="fullName">Full Name</label>
+                        <div class="input-wrapper"><i class="fas fa-user-circle"></i><input type="text" id="fullName" placeholder="Enter your full name" autocomplete="name" required></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-wrapper"><i class="fas fa-envelope"></i><input type="email" id="email" placeholder="Enter your email address" autocomplete="email" required></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <div class="input-wrapper"><i class="fas fa-at"></i><input type="text" id="username" placeholder="Choose a username" autocomplete="username" pattern="[a-zA-Z0-9_.]{3,20}" required></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper"><i class="fas fa-lock"></i><input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required><i class="fas fa-eye password-toggle" data-toggle="password"></i></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="input-wrapper"><i class="fas fa-shield-alt"></i><input type="password" id="confirmPassword" placeholder="Confirm your password" autocomplete="new-password" required></div>
+                    </div>
+                    <label class="terms-check"><input type="checkbox" id="terms" required> <span>I agree to the Terms of Service and Privacy Policy</span></label>
+                    <button type="submit" class="submit-btn"><i class="fas fa-user-plus"></i> Create account</button>
+                </form>
+                <p class="auth-switch">Already have an account? <a href="/login">Log in</a></p>
+            </div>
+            <p class="auth-legal">&copy; Agrosphere AI · <a href="/contact" style="color:inherit">Help</a></p>
+        </section>
+        <section class="auth-photo-side" style="background-image: url('https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=1800&q=80');">
+            <div class="auth-photo-caption">
+                <h2>Start your <span>smart farming</span> journey.</h2>
+                <ul>
+                    <li><i class="fas fa-check"></i> Track crops & livestock with 1-minute weekly reviews</li>
+                    <li><i class="fas fa-check"></i> Weather alerts for your exact farm location</li>
+                    <li><i class="fas fa-check"></i> AI advice and plant disease diagnosis</li>
+                </ul>
+            </div>
+            <span class="photo-credit">Photo: Unsplash</span>
+        </section>
+    </main>
+</body>
+</html>

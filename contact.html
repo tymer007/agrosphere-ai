@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/assets/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/site.css">
+    <link rel="stylesheet" href="/assets/css/brand.css">
+    <link rel="stylesheet" href="/assets/css/site-extra.css">
+    <title>Contact · Agrosphere AI</title>
+    <script type="module" src="/js/pages/contact.js"></script>
+</head>
+<body>
+    <agro-site-nav active="contact"></agro-site-nav>
+
+    <header class="page-hero">
+        <h1>Get in <span>touch</span></h1>
+        <p>Questions about Agrosphere AI, partnerships or support for your farm? We'd love to hear from you.</p>
+    </header>
+
+    <section class="section contact-section">
+        <div class="contact-grid">
+            <div class="contact-cards">
+                <a class="contact-card" href="mailto:info@agrosphere.ai">
+                    <div class="feature-icon"><i class="fas fa-envelope"></i></div>
+                    <div><h3>Email us</h3><p>info@agrosphere.ai<br>We reply within 1 business day.</p></div>
+                </a>
+                <a class="contact-card" href="tel:+2348001234567">
+                    <div class="feature-icon"><i class="fas fa-phone"></i></div>
+                    <div><h3>Call us</h3><p>+234 800 123 4567<br>Mon - Fri, 8am - 6pm WAT</p></div>
+                </a>
+                <div class="contact-card">
+                    <div class="feature-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div><h3>Visit us</h3><p>Lagos, Nigeria</p></div>
+                </div>
+                <div class="contact-card">
+                    <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                    <div><h3>Already a user?</h3><p>Ask Agro AI inside your dashboard for instant farming help.</p></div>
+                </div>
+            </div>
+
+            <div class="contact-form-card">
+                <h2>Send us a message</h2>
+                <p>Fill in the form and our team will get back to you.</p>
+                <form id="contactForm" novalidate>
+                    <div class="form-two">
+                        <div class="input-group"><label for="cName">Your name</label><div class="input-wrapper"><i class="fas fa-user"></i><input id="cName" required autocomplete="name"></div></div>
+                        <div class="input-group"><label for="cEmail">Email</label><div class="input-wrapper"><i class="fas fa-envelope"></i><input id="cEmail" type="email" required autocomplete="email"></div></div>
+                    </div>
+                    <div class="input-group"><label for="cTopic">Topic</label>
+                        <select id="cTopic"><option>General question</option><option>Account & login help</option><option>Report a problem</option><option>Pro plan / pricing</option><option>Partnership</option></select></div>
+                    <div class="input-group"><label for="cMessage">Message</label><textarea id="cMessage" required maxlength="2000" placeholder="How can we help?"></textarea></div>
+                    <button class="submit-btn" type="submit"><i class="fas fa-paper-plane"></i> Send message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <agro-site-footer></agro-site-footer>
+</body>
+</html>

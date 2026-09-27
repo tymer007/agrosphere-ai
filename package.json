@@ -1,0 +1,13 @@
+{
+  "name": "agrosphere-ai",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Agrosphere AI - intelligent farming assistant",
+  "scripts": {
+    "dev": "node dev-server.mjs",
+    "vercel": "vercel dev",
+    "static": "npx serve -l 3000 ."
+  },
+  "engines": { "node": ">=20" }
+}
